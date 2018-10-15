@@ -1,0 +1,246 @@
+<style lang="less">
+page {
+  background-color: #FFFFFF;
+}
+.label_text {
+  height:115rpx;
+  line-height:115rpx;
+  background-color: #F3F3F3;
+  position: absolute;
+  top:40%;
+  left:30rpx;
+  right:30rpx;
+  color:#b4b2b2;
+  border-radius: 12rpx;
+}
+.icon_search {
+  position: relative;
+  top:6rpx;
+  margin-right: 10rpx;
+}
+.view_search_bar__text {
+  font-size: 18px;
+}
+.view_bottom {
+  position: absolute;
+  bottom:-120rpx;
+  left: 0rpx;
+  right: 0rpx;
+}
+.view_bottom view{
+  width:50%;
+}
+.view_bottom text{
+  display: block;
+  height:80rpx;
+  line-height: 80rpx;
+  margin-top:20rpx;
+  margin-bottom:20rpx;
+}
+.view_bottom>view:first-child text {
+  border-right:1rpx solid #FFFFFF;
+}
+.in_view_bottom {
+  animation: in_view_bottom 0.5s forwards 0s;
+}
+@keyframes in_view_bottom {
+  0% {
+    bottom:-120rpx;
+  }
+  100% {
+    bottom:0;
+  }
+}
+.out_view_bottom {
+  animation: out_view_bottom 0.5s forwards 0s;
+}
+@keyframes out_view_bottom {
+  0% {
+    bottom:0rpx;
+  }
+  100% {
+    bottom:-120rpx;
+  }
+}
+.in_input_top {
+  animation: in_input_top 0.5s forwards 0s;
+}
+@keyframes in_input_top {
+  0% {
+    top:40%;
+    height:115rpx;
+  }
+  100% {
+    top:30rpx;
+    height:231rpx;
+  }
+}
+.out_input_top {
+  animation: out_input_top 0.5s forwards 0s;
+}
+@keyframes out_input_top {
+  0% {
+    top:30rpx;
+    height:231rpx;
+  }
+  100% {
+    top:40%;
+    height:115rpx;
+  }
+}
+.topinb {
+  height: 120rpx;
+  overflow: hidden;
+  position: relative;
+}
+.topinb > view {
+  width:20rpx;
+  height:20rpx;
+  display: inline-block;
+  border-right:4rpx solid #999999;
+  border-bottom:4rpx solid #999999;
+  transform:rotate(45deg);
+  position: relative;
+  top:-30rpx;
+}
+.searchInput > input{
+  color:#34393F;
+  padding:0rpx 30rpx;
+  height:100rpx;
+  line-height: 100rpx;
+  position:absolute;
+  left:0rpx;
+  bottom:0rpx;
+  right: 150rpx;
+}
+.searchInput>view {
+  width:150rpx;
+  height: 100rpx;
+  line-height: 100rpx;
+  position: absolute;
+  right:0rpx;
+  bottom: 0rpx;
+}
+.record {
+  position: absolute;
+  top: 320rpx;
+  left:30rpx;
+  right: 30rpx;
+  bottom: 30rpx;
+  overflow-y: auto;
+}
+.recordList>view {
+  height:72rpx;
+  max-width: 170rpx;
+  line-height:72rpx;
+  padding:0rpx 20rpx;
+  margin-top:20rpx;
+  margin-right:20rpx;
+  border-radius: 12rpx;
+}
+</style>
+<template>
+  <view style="width:100%;height:{{windowHeight}}px;overflow: hidden;position: relative">
+    <view class="label_text block {{inputShowed?'in_input_top':'out_input_top'}}">
+      <view class="tc" hidden="{{inputShowed}}" @tap="showInput">
+        <icon class="icon_search inline-block" type="search" size="18"></icon>
+        <view class="view_search_bar__text inline-block">请输入关键字搜索</view>
+      </view>
+      <view class="topinb tc" hidden="{{!inputShowed}}" @tap="hideInput">
+        <view></view>
+      </view>
+      <view class="searchInput" hidden="{{!inputShowed}}">
+        <input type="text" placeholder="请输入关键字搜索" placeholder-style="#B9B9C1" confirm-type="search" value="{{inputVal}}" focus="{{inputFocus}}" @input="inputTyping" @confirm="searchResults"/>
+        <view class="c3CC tc fz36" @tap="searchResults">搜索</view>
+      </view>
+    </view>
+    <view class="record" wx:if="{{inputFocus && recordList.length}}">
+      <view class="recordTitle fz24 c7B7">搜索历史</view>
+      <view class="recordList">
+        <view class="bc3CC tc cfff inline-block fz28 h1ddd" wx:for="{{recordList}}" style="background-color:{{allColor[item.color]}}" @tap="searchQuery({{item.uname}})">{{item.uname}}</view>
+      </view>
+    </view>
+    <!-- <view class="view_bottom flex bc3CC cfff tc fz30 {{inputShowed?'out_view_bottom':'in_view_bottom'}}">
+      <view @tap="seeResults(1)">
+        <text>仓库商品</text>
+      </view>
+      <view @tap="seeResults(2)">
+        <text>我关注的</text>
+      </view>
+    </view> -->
+  </view>
+</template>
+<script>
+import wepy from 'wepy';
+import api from '../../utils/api';
+import {allColor} from '../../utils/util';
+export default class inventoryQuery extends wepy.page {
+  config = {
+    "navigationBarTitleText": "库存查询",
+  }
+  data = {
+    wxUrl:'',
+    windowHeight:wepy.getSystemInfoSync().windowHeight,
+    inputShowed:false,
+    inputFocus:false,
+    inputVal:'',
+    recordList:[],
+    allColor:allColor,
+  }
+	components = {
+  }
+  methods = {
+    showInput(){
+      const that = this;
+      this.inputShowed = true;
+      this.inputVal = '';
+      setTimeout(()=>{
+        that.inputFocus = true;
+        that.$apply();
+      },500);
+    },
+    hideInput(){
+      this.inputShowed = false;
+      this.inputFocus = false;
+    },
+    inputTyping(e) {
+      this.inputVal = e.detail.value;
+    },
+    searchResults(){//点击搜索
+      if(this.inputVal){
+        this.recordList = this.recordList.filter((items,index)=>{
+          if(items.uname != this.inputVal && index<6){
+            return items;
+          }
+        });
+        this.recordList.unshift({
+          uname:this.inputVal,
+          color:Math.floor(Math.random()*20),
+        });
+        wepy.setStorageSync(this.wxUrl,this.recordList);
+        this.$navigate('inventoryQueryResults?query='+this.inputVal);
+      }
+    },
+    searchQuery(query){//点击搜索记录
+      this.$navigate('inventoryQueryResults?query='+query);
+    },
+    seeResults(type){
+      this.$navigate('inventoryQueryResults?type='+type);
+    }
+  }
+  onShow(){
+    if(this.inputShowed){
+      this.inputFocus = true;
+    }
+  }
+  onHide(){
+    if(this.inputShowed){
+      this.inputFocus = false;
+    }
+  }
+  async onLoad() {
+    this.wxUrl = getCurrentPages()[getCurrentPages().length-1].route.replace(/\//g,'_');
+    this.recordList = wepy.getStorageSync(this.wxUrl) || [];
+  }
+}
+</script>

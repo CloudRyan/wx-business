@@ -1,0 +1,104 @@
+<style lang="less">
+.screening {
+	position: fixed;
+	left: 0rpx;
+	right: 0rpx;
+	top: 0rpx;
+	bottom: 0rpx;
+	background:rgba(0,0,0,0);
+	z-index: 2;
+}
+.screening .scrData {
+	position:absolute;
+	width:60%;
+	right:-70%;
+	top:0rpx;
+	bottom:0rpx;
+	background-color: #FFFFFF;
+	padding:10rpx 0rpx 30rpx 30rpx;
+	overflow:auto;
+}
+.in-screening {
+  animation: in-screening 0.15s forwards 0s;
+}
+@keyframes in-screening {
+  0% {
+    background:rgba(0,0,0,0);
+  }
+  100% {
+    background:rgba(0,0,0,0.5);
+  }
+}
+.screening .in-scrData {
+  animation: in-scrData 0.6s forwards 0.15s;
+}
+@keyframes in-scrData {
+  0% {
+    right:-70%;
+  }
+  100% {
+    right:0;
+  }
+}
+.screening .scrData>view {
+	height:100rpx;
+	line-height: 100rpx;
+}
+.screening .scrData>view:not(:first-child) {
+	border-bottom: 1rpx solid #ebebeb;
+}
+.screening .scrData>view:last-child {
+	border-bottom:0rpx;
+}
+</style>
+<template>
+	<view class="screening {{show?'in-screening':''}}" wx:if="{{show}}" @tap="screening(false)">
+		<view class="scrData {{show?'in-scrData':''}}" @tap.stop="screening(true)">
+			<view class="fz24 c7B7">业务员</view>
+			<view class="fz28 {{busId==''?'c3CC':'c444'}}" @tap.stop="scrConfirm('')">全部</view>
+			<view wx:for="{{busList}}" class="fz28 {{item.id==busId?'c3CC':'c444'}}" @tap.stop="scrConfirm({{item.id}})">{{item.userName}}</view>
+		</view>
+	</view>
+</template>
+<script>
+import wepy from 'wepy';
+import {getStaffOfYWY} from '../../utils/api';
+export default class screening extends wepy.component {
+  data = {
+		busList:[],
+  }
+  props = {
+		show: {
+			type: Boolean,
+			default: false,
+			twoWay: true,
+		},
+		busId: {
+			type: Number,
+			default: '',
+			twoWay: true,
+		}
+  }
+  methods = {
+		screening(type){
+			this.show = type=='true'?true:false;
+		},
+		scrConfirm(id){
+			this.busId = id;
+			this.show = false;
+			this.$apply();
+		},
+  }
+	// watch = {
+	// 	'busId':(newVal)=>{
+	// 		console.log(typeof newVal);
+	// 	}
+	// }
+	onLoad(){
+		getStaffOfYWY(data=>{
+			this.busList = data.data;
+			this.$apply();
+		});
+	}
+}
+</script>

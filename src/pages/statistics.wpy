@@ -1,0 +1,204 @@
+<style lang="less">
+@import '../styles/animation';
+.container {
+  margin-bottom: 20rpx;
+  padding:0rpx 28rpx;
+}
+.container:nth-child(1) {
+  opacity: 0;
+  animation: in-charlie .65s ease-out forwards .15s
+}
+.container:nth-child(2) {
+  opacity: 0;
+  animation: in-charlie .65s ease-out forwards .35s
+}
+.container:nth-child(3) {
+  opacity: 0;
+  animation: in-charlie .65s ease-out forwards .55s
+}
+.erTt {
+  height: 80rpx;
+  line-height: 90rpx;
+  // height:78rpx;
+  // line-height: 78rpx;
+  // border-bottom:1px solid #E5E5E5;
+}
+.erImg {
+  width:110rpx;
+  height:110rpx;
+  // margin-top:28rpx;
+  margin-top: 10rpx;
+}
+.erlist {
+  // padding:0rpx 10rpx;
+}
+.erlist>view {
+  // float: left;
+  // width:25%;
+  // text-align: center;
+}
+.erlist>view image {
+  margin-left: auto;
+  margin-right: auto;
+}
+.erlist text.c7B7 {
+  height:66rpx;
+  line-height: 66rpx;
+}
+.grayscale {
+  filter:grayscale(100%);
+}
+.points > view {
+  padding-bottom: 20rpx;
+}
+.points > view > view {
+  width: 50%;
+  height: 160rpx;
+}
+.points > view > view .fz32 {
+  margin-top:40rpx;
+}
+.points > view > view .fz20 {
+  margin-top:5rpx;
+  opacity: .6;
+}
+.points > view:nth-child(1) >view:nth-child(1) {
+  margin-right: 10rpx;
+  border-radius: 0rpx 20rpx;
+  background: linear-gradient(to bottom right, #8495F3, #98C0FA);
+}
+.points > view:nth-child(1) >view:nth-child(2) {
+  margin-left: 10rpx;
+  border-radius: 20rpx 0rpx;
+  background: linear-gradient(to bottom right, #F28682, #F7A485);
+}
+.points > view:nth-child(2) >view:nth-child(1) {
+  margin-right: 10rpx;
+  border-radius: 20rpx 0rpx;
+  background: linear-gradient(to bottom right, #7BC11B, #ACDF38);
+}
+.points > view:nth-child(2) >view:nth-child(2) {
+  margin-left: 10rpx;
+  border-radius: 0rpx 20rpx;
+  background: linear-gradient(to bottom right, #4E9AF5, #74B6F4);
+}
+</style>
+<template>
+  <!-- <scroll-view scroll-x="true" style=" white-space: nowrap; display: flex" >
+    <view style="background: red; width: 200px; height: 100px; display: inline-block" ></view>
+    <view style="background: green; width: 200px; height: 100px; display: inline-block"></view>
+    <view style="background: blue; width: 200px; height: 100px; display: inline-block"></view>
+    <view style="background: yellow; width: 200px; height: 100px; display: inline-block"></view>
+  </scroll-view> -->
+  <view class="container bcfff">
+    <view class="erTt c444 fz28">经营分析</view>
+    <view class="points cfff tc">
+      <view class="flex">
+        <view @tap="seeclick('oper/salesAnalysis')">
+          <view class="fz32">销量分析</view>
+          <view class="fz20">转化目标精细运营</view>
+        </view>
+        <view @tap="seeclick('oper/orderAnalysis')">
+          <view class="fz32">订单分析</view>
+          <view class="fz20">留存复购沉淀客户</view>
+        </view>
+      </view>
+      <view class="flex">
+        <view @tap="seeclick('oper/warehouseAnalysis')">
+          <view class="fz32">库存分析</view>
+          <view class="fz20">库存周转生产分布</view>
+        </view>
+        <view @tap="seeclick('oper/customerAnalysis')">
+          <view class="fz32">客户分析</view>
+          <view class="fz20">用户价值深度挖掘</view>
+        </view>
+      </view>
+    </view>
+  </view>
+  <view class="container bcfff">
+    <view class="erTt c444 fz28">出库与入库</view>
+    <view class="flex erlist tc">
+      <view @tap="seeclick('oper/andOutManage?type=0')">
+        <!-- storageManage -->
+        <image class="erImg block" src="../images/oper/c1.png"></image>
+        <text class="c7B7 fz24">入库管理</text>
+      </view>
+      <view @tap="seeclick('oper/andOutManage?type=1')">
+        <image class="erImg block" src="../images/oper/c2.png"></image>
+        <text class="c7B7 fz24">出库记录</text>
+      </view>
+      <view @tap="seeclick('oper/inventoryQuery')">
+        <image class="erImg block" src="../images/oper/c3.png"></image>
+        <text class="c7B7 fz24">库存查询</text>
+      </view>
+      <view @tap="seeclick('oper/warning')">
+        <image class="erImg block" src="../images/oper/c4.png"></image>
+        <text class="c7B7 fz24">库存预警</text>
+      </view>
+    </view>
+  </view>
+  <view class="container bcfff">
+    <view class="erTt c444 fz28">订单与售后</view>
+    <view class="flex erlist tc">
+      <view @tap="seeclick('oper/returnOrder')">
+        <image class="erImg block" src="../images/oper/b2.png"></image>
+        <text class="c7B7 fz24">退换货记录</text>
+      </view>
+      <!-- <view @tap="seeclick('fun/salesOrder')">
+        <image class="erImg block" src="../images/oper/b1.png"></image>
+        <text class="c7B7 fz24">订单管理</text>
+      </view> -->
+      <!-- <view style="opacity: 0;">
+        <image class="erImg block" src="../images/oper/b3.png"></image>
+        <text class="c7B7 fz24">换货记录</text>
+      </view>
+      <view style="opacity: 0;">
+        <image class="erImg block" src="../images/oper/b4.png"></image>
+        <text class="c7B7 fz24">客户管理</text>
+      </view> -->
+    </view>
+  </view>
+</template>
+<script>
+import wepy from 'wepy';
+
+export default class statistics extends wepy.page {
+  config = {
+    "navigationBarTitleText": "运营",
+    // "enablePullDownRefresh": true,
+    "backgroundTextStyle": "#F3F4F7",//下拉样式
+  }
+  globalData = {
+
+  }
+  data = {
+  }
+  methods = {
+    seeclick: function(url){
+      this.$navigate(url);
+    }
+  }
+  onPullDownRefresh() {
+    wepy.showNavigationBarLoading();
+    setTimeout(()=>{
+      this.getData = '下拉刷新成功'
+      wepy.stopPullDownRefresh()
+      wepy.hideNavigationBarLoading()
+      this.$apply()
+    },3000)
+  }
+  onLoad() {
+    wepy.showShareMenu();
+  }
+  onReady(){
+
+  }
+  onShareAppMessage(res) {
+    return {
+      title: '用数据管理你的生意',
+      path: 'pages/home',
+      imageUrl: '../images/turn.jpg'
+    }
+  }
+}
+</script>

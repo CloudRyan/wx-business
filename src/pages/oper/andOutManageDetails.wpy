@@ -1,0 +1,145 @@
+<style lang="less">
+.infor {
+  padding:25rpx 28rpx 25rpx 28rpx;
+  margin-bottom:20rpx;
+}
+.posImg {
+  width:160rpx;
+  height:160rpx;
+  position: absolute;
+  right:20rpx;
+  top:20rpx;
+  z-index: 1;
+}
+.splist {
+  margin-top:20rpx;
+  border-right:1rpx solid #E5E5E5;
+  border-bottom:1rpx solid #E5E5E5;
+}
+.splist .trtitle view,
+.splist .trlist view{
+  width:25%;
+  border-top:1rpx solid #E5E5E5;
+  border-left:1rpx solid #E5E5E5;
+}
+.splist .trtitle{
+  height:60rpx;
+  line-height:60rpx;
+  background-color:#F9F9F9
+}
+.splist .trlist view{
+  padding: 10rpx;
+  display:flex;
+  display: -webkit-flex;
+  align-items:center;
+}
+.imglist {
+  display: flex;
+  white-space: nowrap;
+}
+.imglist view {
+  width: 155rpx;
+  height: 145rpx;
+  padding-right:10rpx;
+  display: inline-block
+}
+.imglist image{
+  width:100%;
+  height:100%
+}
+.ysime {
+  width:20rpx;
+  height:20rpx;
+  border-radius: 50%;
+  margin-right: 30rpx;
+}
+.ysime view {
+  height:43rpx;
+  width:2rpx;
+  background-color: #E5E5E5;
+  position: relative;
+  top:20rpx;
+  left:9rpx;
+}
+</style>
+<template>
+  <view class="infor bcfff relative ove-h">
+    <view>
+      <view><text class="c7B7 fz24">出库单号：</text><text class="c444 fz26">{{trialInfo.orderNo}}</text></view>
+      <view><text class="c7B7 fz24">出库总计：</text><text class="c444 fz26">共 {{trialInfo.goodsKind}}件 {{trialInfo.goodsNum}}种 商品</text></view>
+      <view><text class="c7B7 fz24">出库金额：</text><text class="c444 fz26">￥{{trialInfo.orderAmount}}</text></view>
+      <view><text class="c7B7 fz24">出库仓库：</text><text class="c444 fz26">{{trialInfo.storageName}}</text></view>
+      <view><text class="c7B7 fz24">出库时间：</text><text class="c444 fz28">{{trialInfo.createTime}}</text></view>
+      <view><text class="c7B7 fz24">备<text style="margin-left:48rpx;"></text>注：</text><text class="c444 fz28">{{trialInfo.remark}}</text></view>
+    </view>
+    <image class="posImg" src="../../images/oper/lib/status{{trialInfo.status}}.png"/>
+  </view>
+  <view class="infor bcfff">
+    <view class="c444 fz26">商品信息</view>
+    <view class="splist fz24 tc">
+      <view class="flex c7B7 trtitle"><view>商品名称</view><view>规格信息</view><view>出库数量</view><view>出库总金额</view></view>
+      <view class="flex c444 trlist" wx:for="{{trialInfo.goodsList}}" wx:for-item="items">
+        <view>{{items.goodsName}}</view>
+        <view>{{items.skuName}}</view>
+        <view>{{items.quantity}}</view>
+        <view>{{items.totalAmount}}</view>
+      </view>
+    </view>
+  </view>
+  <!-- <view class="infor bcfff">
+    <view style="margin-bottom:20rpx;"><text class="c444 fz26">售后凭证</text><text class="cb9b fz24">（点击图片查看大图/共{{trialInfo.paths.length||0}}张）</text></view>
+    <scroll-view scroll-x="true" class="imglist">
+      <view wx:for="{{trialInfo.paths}}" wx:for-item="image">
+        <image mode="aspectFill" src="{{image}}" data-src="{{image}}" @tap="previewImage"></image>
+      </view>
+    </scroll-view>
+  </view> -->
+  <view class="infor bcfff">
+    <view class="c444 fz28">出库流程</view>
+    <view class="fz24" style="margin-top:30rpx;" wx:for="{{trialInfo.outStockList}}">
+      <view class="inline-block bc3CC ysime"><view wx:if="{{trialInfo.outStockList.length-1 != index}}"></view></view>
+      <view class="inline-block c444">{{item.operMsg}}</view>
+      <view class="inline-block c444" style="margin-left:20rpx;">{{item.operUserName}}</view>
+      <view class="inline-block cb9b right">{{item.operTime}}</view>
+    </view>
+  </view>
+</template>
+<script>
+import wepy from 'wepy';
+import api from '../../utils/api';
+import tip,{alert} from '../../utils/tip';
+export default class andOutManageDetails extends wepy.page {
+  config = {
+    "navigationBarTitleText": "出库详情",
+  }
+  data = {
+    //1:待付款,2:支付中,3待发货,4:部份发货,5:已发货,6:交易完成,7:交易关闭,8:退款中,9:交易取消
+    trialInfo:null,
+  }
+  components = {
+  }
+  methods = {
+    previewImage(e){
+      var src=e.target.dataset.src;
+      wepy.previewImage({
+          current: src, // 当前显示图片的http链接
+          urls: this.trialInfo.paths, // 需要预览的图片http链接列表
+      })
+    }
+  }
+  events = {
+  }
+  onLoad(option) {
+    console.log(option);
+    let that = this;
+    api.getOutStockDetail({
+      query: {
+        orderId: option.id,//78548
+      }
+    },data=>{
+      that.trialInfo = data.data;
+      that.$apply();
+    });
+  }
+}
+</script>

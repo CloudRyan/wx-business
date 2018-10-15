@@ -1,0 +1,84 @@
+<style lang="less">
+.container {
+  padding:30rpx 30rpx 50rpx 30rpx;
+  border-radius: 10rpx;
+  position: absolute;
+  top:30rpx;
+  left:30rpx;
+  right:30rpx;
+  bottom:130rpx;
+}
+.bottonInfo {
+  position: absolute;
+  bottom:30rpx;
+  left:30rpx;
+  right:30rpx;
+}
+.logo {
+  width:190rpx;
+  height:190rpx;
+  border-radius: 50%;
+  text-align: center;
+  margin:40rpx auto 20rpx auto;
+}
+.logo image {
+  width:112rpx;
+  height:64rpx;
+  margin-top:63rpx;
+}
+.vt20>view{
+  margin-top:50rpx;
+  line-height: 40rpx;
+}
+.vt20 .ld {
+  padding-left:20rpx;
+}
+.vt20 .ld>view{
+  width:10rpx;
+  height:10rpx;
+  border-radius: 50%;
+  background-color: #444652;
+  display: inline-block;
+  margin-left:-20rpx;
+  margin-right:10rpx;
+}
+</style>
+<template>
+  <view class="container bcfff">
+    <view class="logo bc3CC">
+      <image src="../images/logo.png"></image>
+    </view>
+    <view class="tc fz36">小程序</view>
+    <view class="tc fz24 c7B7" style="margin-top:10rpx;">{{version||'v2.0'}}</view>
+    <view class="vt20 fz26">
+      <view><text class="c3CC">小程序</text>是由**网络科技为县域商贸企业量身打造的数据分析、集中管理的决策分析服务工具</view>
+      <view class="ld"><view></view>为商贸管理者提供企业现阶段的整体运营情况及各个经营指标完成情况</view>
+      <view class="ld"><view></view>分析商贸企业各个业务发展及构成情况,让管理者对企业各业务发展、变动、运营情况有更深入的了解</view>
+      <view class="ld"><view></view>为管理者分配资源配置的合理性、过程活动的优化方案和过程异常变异的发现提供强大的数据引擎分析服务</view>
+    </view>
+  </view>
+  <view class="bottonInfo cb9b fz24 tc">
+    <view>© ***有限公司 版权所有</view>
+    <view>***.com</view>
+  </view>
+</template>
+<script>
+import wepy from 'wepy';
+export default class about extends wepy.page {
+  config = {
+    "navigationBarTitleText": "关于我们",
+  }
+  data = {
+    version:wx.getExtConfigSync().version
+  }
+  components = {
+  }
+  methods = {
+
+  }
+  events = {
+  }
+  onLoad() {
+  }
+}
+</script>

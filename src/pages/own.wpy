@@ -1,0 +1,154 @@
+<style lang="less">
+page{
+  background-color: #FFFFFF;
+}
+.topTnt {
+  height:208rpx;
+}
+.userInfo {
+  // border-radius: 40% 40% 0rpx 0rpx;
+  margin-top:-70rpx;
+}
+.userInfo>view {
+  margin-bottom:30rpx;
+}
+.userImg {
+  width:180rpx;
+  height:180rpx;
+  border-radius: 50%;
+  margin-top:-90rpx;
+  margin-bottom:20rpx;
+  background-color:#FFFFFF;
+}
+.userDeta {
+  width:219rpx;
+  height:70rpx;
+  line-height: 70rpx;
+  border-radius: 35pt;
+  margin:auto;
+  border:1px solid #16B4BA;
+}
+.version {
+  position: absolute;
+  bottom: 50rpx;
+  left:0rpx;
+  right:0rpx;
+}
+.version view {
+  margin-top:10rpx;
+}
+</style>
+<template>
+  <view class="bc3CC topTnt"></view>
+  <image style="width:100%;height:30px;" src="../images/ownz.png"></image>
+  <view class="userInfo  tc">
+    <image class="userImg" src="{{userInfo.avatarUrl}}"></image>
+    <view class="fz38 c444">{{userInfo.nickName}}</view>
+    <view class="fz26 c7B7">{{dataInfo.companyName}}</view>
+    <view class="userDeta fz28 c3CC" @tap="personal">个人资料</view>
+    <view class="fz27 c444" style="margin-top:50rpx;" @tap="toAbout">关于小程序</view>
+    <!-- <view class="fz27 c444">修改密码</view> -->
+    <view class="fz27 c444" @tap="outOwn">退出</view>
+  </view>
+  <view class="version fz24 cb9b tc">
+    <view>{{dataInfo.rightShort}}</view>
+    <view>{{version||'v2.0'}}</view>
+  </view>
+</template>
+<script>
+import wepy from 'wepy';
+import api from '../utils/api';
+export default class own extends wepy.page {
+  config = {
+    "navigationBarTitleText": "我的",
+    backgroundColorTop: "#16B4BA",
+    // enablePullDownRefresh : true,
+  }
+  data = {
+    dataInfo:wepy.getStorageSync('suppInfo'),
+    userInfo:wepy.getStorageSync('userInfo'),
+    version:wx.getExtConfigSync().version
+  }
+  components = {
+  }
+  methods = {
+    toAbout (){
+      wepy.navigateTo({
+        url: 'about'
+      })
+    },
+    outOwn(){
+      wepy.reLaunch({
+        url: 'login?page=own'
+      });
+    },
+    personal (){
+      wepy.navigateTo({
+        url: 'personal'
+      })
+    }
+  }
+  events = {
+  }
+  // onPullDownRefresh() {
+  //   wepy.showNavigationBarLoading();
+  //   this.onLoad({news:true});
+  // }
+  onReady(){
+  }
+  onLoad(data) {
+    wepy.showShareMenu();
+    // wepy.removeTabBarBadge({
+    //   index: 2,
+    //   success (){
+    //     console.log('关闭了提示');
+    //   },
+    //   fail (){
+    //     console.error('关闭提示失败');
+    //   },
+    //   complete (){
+    //     console.log('关闭并且回调完成');
+    //   }
+    // });
+    // 获取用户信息
+    // wepy.getSetting({
+    //   success: res => {
+    //     console.log(res.authSetting);
+    //     if(res.authSetting['scope.userInfo']) {
+    //       wx.getUserInfo({
+    //           success: res => {
+    //           console.log(res.userInfo);
+    //           this.userInfo = res.userInfo;
+    //           this.$apply();
+    //           wepy.setStorageSync('userInfo', res.userInfo);
+    //         }
+    //       });
+    //     }
+    //   }
+    // })
+    let that = this;
+    if(!that.userInfo || !that.dataInfo || data.news){
+      wx.getUserInfo({
+        success: res => {
+          wepy.setStorageSync('userInfo', that.userInfo = res.userInfo);
+          api.getSupplierLite(res=>{
+            wepy.setStorageSync('suppInfo', that.dataInfo = res.data);
+            if(data.news){
+              wepy.stopPullDownRefresh();
+              wepy.hideNavigationBarLoading();
+            }
+            that.$apply();
+          });
+        }
+      });
+    }
+  }
+  onShareAppMessage(res) {
+    return {
+      title: '用数据管理你的生意',
+      path: 'pages/home',
+      imageUrl: '../images/turn.jpg'
+    }
+  }
+}
+</script>

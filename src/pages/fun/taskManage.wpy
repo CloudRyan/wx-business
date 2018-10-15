@@ -1,0 +1,269 @@
+<style lang="less">
+.container {
+  // position: fixed;
+  // left: 0rpx;
+  // right: 0rpx;
+  // top: 0rpx;
+  // z-index: 1;
+  border-bottom: 1rpx solid #f3f4f7;
+}
+.trtite {
+  width:75%;
+  position: relative;
+  left:5%;
+}
+.trtite .flex>view{
+  width:130rpx;
+  height:88rpx;
+  line-height: 88rpx;
+  text-align: center;
+}
+.trtite .active {
+  color:#16B4BA;
+}
+.active-x {
+  width:130rpx;
+  height:4rpx;
+  background-color: #16B4BA;
+  position: absolute;
+  bottom:-1rpx;
+}
+.filterBtn {
+  width:15%;
+  text-align:center;
+}
+.filterBtn>view {
+  height: 50%;
+  margin-top:20%;
+  border-left:1rpx solid #E5E5E5;
+}
+.filterBtn image{
+  width:29rpx;
+  height:31rpx;
+  margin-top: 7rpx;
+}
+.trList> view{
+  // margin-bottom:20rpx;
+  // padding-left:30rpx;
+  padding:30rpx;
+  margin-top:20rpx;
+}
+.trList .leftInfo .user image {
+	width:48rpx;
+	height:48rpx;
+	border-radius: 50%;
+	// background-color: #ccc;
+}
+.trList .leftInfo .user text {
+	position: relative;
+	top:-15rpx;
+	left:20rpx;
+}
+.trList .leftInfo .tandard {
+	width:24rpx;
+	height:24rpx;
+	margin-right: 10rpx;
+	position: relative;
+	top:5rpx;
+}
+.trList .see {
+	width:120rpx;
+	height:50rpx;
+	line-height: 50rpx;
+	text-align:center;
+	border:1rpx solid #16B4BA;
+	position:relative;
+	top:130rpx;
+	border-radius: 4rpx;
+}
+.trList .okTime {
+	margin-top:10rpx;
+	margin-bottom: 10rpx;
+}
+.canvas {
+	width:100px;
+	height:100px;
+	position: absolute;
+	top: -40rpx;
+	right: -40rpx;
+}
+</style>
+<template>
+  <view style="height:88rpx;">
+    <view class="container bcfff flex c7B7 fz24">
+      <view class="trtite">
+        <view class="flex">
+          <view @tap.stop="seeclick({{$event}})" data-index="0" class="{{activeIndex==0&&'active'}}"><view>进行中</view></view>
+          <view @tap.stop="seeclick({{$event}})" data-index="1" class="{{activeIndex==1&&'active'}}"><view>已完成</view></view>
+          <view @tap.stop="seeclick({{$event}})" data-index="2" class="{{activeIndex==2&&'active'}}"><view>已过期</view></view>
+        </view>
+        <view class="active-x" animation="{{animation}}"></view>
+      </view>
+      <view class="filterBtn" @tap="screening"><view><image src="../../images/fun/filter.png"></image></view></view>
+    </view>
+  </view>
+  <view class="trList">
+    <view class="bcfff flex" wx:for="{{taskList}}" @tap="toView({{item}})">
+      <view class="leftInfo">
+        <view class="user"><image src="{{item.userImg||'../../images/fun/defaultAvatar.png'}}" id="{{index}}" @error="imgerror"></image><text class="fz24 c7B7">{{item.userName}}</text></view>
+        <view class="fz28 c343">{{item.taskTitle}}</view>
+        <view class="fz24 c7B7 okTime">完成期限：{{item.endDateStr}}</view>
+        <view class="fz20 c6CC"><image src="../../images/fun/tandard.png" class="tandard"></image>{{taskStatusList[item.taskType]}}</view>
+      </view>
+      <view class="relative">
+        <canvas canvas-id="canvas_{{index}}" disable-scroll="true" class="canvas" hidden="{{canvasHide}}"></canvas>
+        <view class="fz24 see c3CC">查看</view>
+      </view>
+    </view>
+  </view>
+  <view class="cb9b fz20 tc">
+    <view wx-if="{{loadInfo==1}}">加载中...</view>
+    <view wx-if="{{loadInfo==2}}">—— 我是有底线的 ——</view>
+    <view wx-if="{{loadInfo==3}}" style="padding:50rpx 0rpx">—— 暂无数据 ——</view>
+  </view>
+  <screening :show.sync="canvasHide" :busId.sync="busId"/>
+</template>
+<script>
+import wepy from 'wepy';
+import api from '../../utils/api';
+import {allColor} from '../../utils/util';
+import screening from '../../components/common/screening';
+const wxCharts = require('../../utils/wxcharts.js');
+export default class taskManage extends wepy.page {
+  config = {
+    "navigationBarTitleText": "任务管理",
+		"onReachBottomDistance": 50
+  }
+  data = {
+		canvasHide:false,
+		activeIndex: 0,
+    animation: wepy.createAnimation({//动画
+      duration: 300,
+      timingFunction: 'linear'
+    }),
+    busId:'',
+    params:{
+      pageNo: 1,
+      pageSize: 8,
+      status: 0,
+		},
+    taskList:[],
+    loadInfo:0,
+    taskStatusList:['','提报新店','拜访门店','铺货上报','收款登记','库存上报','临期调货']
+  }
+  components = {
+    screening
+  }
+  methods = {
+		seeclick(e){
+      this.activeIndex = e.currentTarget.dataset.index;
+      this.animation.translateX(e.target.offsetLeft).step();
+      this.setData({
+        animation:this.animation.export()
+      });
+      this.params.pageNo = 1;
+      this.params.status = this.activeIndex;
+      this.getTaskListWithDetail();
+    },
+		screening(){
+			this.canvasHide = true;
+		},
+    toView(item){
+      this.$navigate('taskManageDetails?taskInfo='+JSON.stringify(item));
+    }
+  }
+  events = {
+  }
+  watch = {
+		"taskList":(newVal, oldVal)=>{
+      const that = this;
+      setTimeout(function(){
+        const num = that.params.pageNo == 1 ? 0 : oldVal.length;
+        for(let i=num; i<newVal.length; i++){
+          that.setCanvas('canvas_'+i,newVal[i]);
+        }
+      },300);
+		},
+    "busId":(newVal,oldVal)=>{
+      if(newVal != oldVal){
+        this.params.pageNo = 1;
+        this.params.userId = newVal;
+        this.getTaskListWithDetail();
+      }
+    }
+	}
+	async onLoad(){
+    this.getTaskListWithDetail();
+  }
+  onReachBottom () {
+    let that = this;
+    if(that.loadInfo == 0){
+      that.params.pageNo++;
+      that.getTaskListWithDetail(data=>{
+        that.taskList = that.taskList.concat(data);
+      });
+    }
+  }
+  imgerror(e){
+    this.taskList[e.target.id].userImg = '../../images/fun/defaultAvatar.png';
+  }
+  getTaskListWithDetail(backFun){
+    let that = this;
+    that.loadInfo = 1;
+    api.getTaskListWithDetail({
+      query:this.params
+    },data=>{
+      if(backFun){
+        backFun(data.data);
+      }else{
+        that.taskList = data.data;
+      }
+      if(data.data.length == that.params.pageSize || that.params.pageNo == 1){
+        that.loadInfo = 0;
+        if(that.taskList.length == 0){
+          that.loadInfo = 3;
+        }
+      }else{
+        that.loadInfo = 2;
+      }
+      that.$apply();
+    });
+  }
+	setCanvas(id,valList){
+
+		new wxCharts({
+			animation: false,
+			canvasId: id,
+			type: 'ring',
+			extra: {
+				ringWidth: 5,//圆环的宽度
+				// pie: {
+				// 	offsetAngle: -45//圆环的角度
+				// }
+			},
+			title: {
+				name: '  '+valList.taskCount+'/'+valList.taskNum,
+				color: '#7B7C87',
+				fontSize: 12
+			},
+			series: [{
+				// name: '2',
+				data: valList.taskNum-valList.taskCount,
+				color:'#E5E5E5',
+				stroke: false
+			},{
+				// name: '成交量4',
+				data: valList.taskCount,
+				color: this.activeIndex==2?'#FF6644':allColor[0],
+				stroke: false
+			}],
+			disablePieStroke: true,
+			width: 100,
+			height: 100,
+			dataLabel: false,
+			legend: false,
+			padding: 0
+		});
+	}
+}
+</script>

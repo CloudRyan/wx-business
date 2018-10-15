@@ -1,0 +1,398 @@
+<style lang="less">
+@import '../../styles/style.less';
+.trtite {
+  width:100%;
+}
+.answer view {
+  bottom:auto;
+  top:-20rpx;
+  transform:rotate(180deg);
+}
+.answer image {
+  top:auto;
+  bottom: 15rpx;
+}
+</style>
+<template>
+  <view @tap="tooClickHide">
+    <view class="container bcfff flex c7B7 fz24 {{activeIndex!=5?'mb20':'mb1'}}">
+      <view class="trtite">
+        <view class="flex">
+          <view @tap.stop="seeclick({{$event}})" data-index="1" data-type="day" class="{{activeIndex==1&&'active'}}"><view>今天</view></view>
+          <view @tap.stop="seeclick({{$event}})" data-index="2" data-type="weeks" class="{{activeIndex==2&&'active'}}"><view>本周</view></view>
+          <view @tap.stop="seeclick({{$event}})" data-index="3" data-type="month" class="{{activeIndex==3&&'active'}}"><view>本月</view></view>
+          <view @tap.stop="seeclick({{$event}})" data-index="4" data-type="year" class="{{activeIndex==4&&'active'}}"><view>本年</view></view>
+          <view @tap.stop="seeclick({{$event}})" data-index="5" class="{{activeIndex==5&&'active'}}"><view>自定义</view></view>
+        </view>
+        <view class="active-x" animation="{{animation}}"></view>
+      </view>
+    </view>
+
+    <view class="indate mb20 bcfff flex fz24 c7B7" style="padding:20rpx;" hidden="{{activeIndex!=5}}">
+      <picker mode="date" value="{{startTime}}" data-name="start" end="{{endTime}}" @change="bindDateChange">
+        <view class="picker">{{startTime}}</view>
+      </picker>
+      <view class="indz">至</view>
+      <picker mode="date" value="{{endTime}}" data-name="end" start="{{startTime}}" @change="bindDateChange">
+        <view class="picker">{{endTime}}</view>
+      </picker>
+      <view class="inbtn bc3CC cfff tc" @tap="customClick">确认</view>
+    </view>
+
+    <view class="container mb20 points bcfff flex tc">
+      <view>
+        <view class="c7B7 fz24">动销客户数</view>
+        <view class="32pt c444">{{apiData.shops}}</view>
+      </view>
+      <view>
+        <view class="c7B7 fz24">订单数</view>
+        <view class="32pt c444">{{apiData.orders}}</view>
+      </view>
+      <view @tap.stop="tooClick(1)">
+        <view class="c7B7 fz24">复购率<text class="problem">?</text></view>
+        <view hidden="{{showToo!=1}}" @tap.stop="tooClickHide()" class="answer bc3CC cfff" style="margin-left:-120rpx;margin-top:25rpx;">
+          <text>在时间段内有过2次或以上下单行为的客户占总客户数的比例，复购高低代表了客户的活跃度.</text>
+          <image src="../../images/oper/close.png"></image>
+          <view style="margin-left:220rpx;"></view>
+        </view>
+        <view class="32pt c444">{{!apiData.purchase?'-':apiData.purchase+'%'}}</view>
+      </view>
+      <view @tap.stop="tooClick(2)">
+        <view class="c7B7 fz24">客户动销率<text class="problem">?</text></view>
+        <view hidden="{{showToo!=2}}" @tap.stop="tooClickHide()" class="answer bc3CC cfff" style="margin-left:-310rpx;margin-top:25rpx;">
+          <text>时间段内客户销售情况的指标，下单客户数/总客户数=客户动销率.</text>
+          <image src="../../images/oper/close.png"></image>
+          <view style="margin-left:430rpx;"></view>
+        </view>
+        <view class="32pt c444">{{!apiData.pin?'-':apiData.pin+'%'}}</view>
+      </view>
+    </view>
+    <view class="bcfff mb20">
+      <view class="c444 fz26 btitle" @tap.stop="tooClick(3)">
+        客户统计
+        <!-- <view class="right" style="margin-right:20rpx;">总客户数:{{apiData.shopCount}}家</view> -->
+        <text class="problem right" style="margin-top:30rpx;margin-right:15rpx;">?</text>
+        <view hidden="{{showToo!=3}}" @tap.stop="tooClickHide()" class="answer bc3CC cfff" style="margin-left:235rpx;margin-top:0rpx;">
+          <text>区域统计为县域总客户数，线路数、类型为已绑定客户总数</text>
+          <image src="../../images/oper/close.png"></image>
+          <view style="margin-left:430rpx;"></view>
+        </view>
+      </view>
+      <view class="areaList c7B7 flex fz26 tc">
+        <view class="{{activeArea==1?'active':''}}" @tap="areaclick(1)">区域 ({{apiData.shopTypeAll||0}}家)</view>
+        <view class="{{activeArea==2?'active':''}}" @tap="areaclick(2)">线路 ({{apiData.lineMapAll||0}}家)</view>
+        <view class="{{activeArea==3?'active':''}}" @tap="areaclick(3)">类型 ({{apiData.storeMapAll||0}}家)</view>
+      </view>
+      <view class="canvas-ionc" hidden="{{((activeArea == 1 && seriesImg.routeCanvas == true) || (activeArea == 2 && seriesImg.routeCanvas == true))==false}}">
+        <canvas canvas-id="routeCanvas" disable-scroll="true" class="canvas"></canvas>
+        <!-- <image src="../../images/oper/customer.png"></image> -->
+      </view>
+      <view class="canvas-ionc" hidden="{{(activeArea == 3 && seriesImg.routeType == true)==false}}">
+        <canvas canvas-id="routeType" disable-scroll="true" class="canvas"></canvas>
+      </view>
+      <view wx:if="{{(activeArea == 1 && seriesImg.routeCanvas == false) || (activeArea == 2 && seriesImg.routeCanvas == false) || (activeArea == 3 && seriesImg.routeType == false)}}" style="padding:90rpx 0rpx;"><image src="../../images/null.png" style="width:249rpx;height:190rpx;margin:auto;display:block;"></image></view>
+    </view>
+    <view class="bcfff mb20">
+      <view class="c444 fz26 btitle mb20">客户动销率</view>
+      <view hidden="{{seriesImg.customerCanvas == false}}">
+        <canvas canvas-id="customerCanvas" disable-scroll="true" class="canvas" style="width:100%;height:300px;"></canvas>
+      </view>
+      <view wx:if="{{seriesImg.customerCanvas == false}}" style="padding:90rpx 0rpx;"><image src="../../images/null.png" style="width:249rpx;height:190rpx;margin:auto;display:block;"></image></view>
+    </view>
+    <view class="bcfff">
+      <view class="c444 fz26 btitle mb20">新增客户分析(业务员)</view>
+      <view hidden="{{seriesImg.newCanvas == false}}">
+        <canvas canvas-id="newCanvas" disable-scroll="true" class="canvas" style="width:100%;height:300px;"></canvas>
+      </view>
+      <view wx:if="{{seriesImg.newCanvas == false}}" style="padding:90rpx 0rpx;"><image src="../../images/null.png" style="width:249rpx;height:190rpx;margin:auto;display:block;"></image></view>
+    </view>
+  </view>
+</template>
+<script>
+import wepy from 'wepy';
+import api from '../../utils/api';
+import util,{allColor} from '../../utils/util';
+const wxCharts = require('../../utils/wxcharts.js');
+export default class customerAnalysis extends wepy.page {
+  config = {
+    "navigationBarTitleText": "客户分析",
+  }
+  data = {
+    allColor:allColor,
+    apiData:null,
+    activeIndex: 2,
+    sliderLeft: 0,
+    animation: wepy.createAnimation({//动画
+      duration: 300,
+      timingFunction: 'linear'
+    }),
+    startTime : util.currentWeek().start,
+    endTime : util.currentWeek().end,
+    windowWidth:wepy.getSystemInfoSync().windowWidth,
+    activeArea:1,
+    seriesImg:{
+      routeCanvas:true,
+      routeType:true,
+      newCanvas:true,
+      customerCanvas:true,
+    },
+    showToo:0,
+  }
+  components = {
+
+  }
+  methods = {
+    seeclick(e){
+      this.showToo = 0;
+      this.activeArea = 1;
+      this.activeIndex = e.currentTarget.dataset.index;
+      this.animation.translateX(e.target.offsetLeft).step();
+      this.setData({
+        animation:this.animation.export()
+      });
+      if(this.activeIndex != 5) {
+        this.getShopAnalysis({
+          dateType:e.currentTarget.dataset.type
+        });
+      }else{
+        this.customget();
+      }
+    },
+    customClick(){
+      this.customget();
+    },
+    bindDateChange (e) {
+      if(e.currentTarget.dataset.name == 'start'){
+        this.startTime = e.detail.value
+      }else{
+        this.endTime = e.detail.value
+      }
+      if(util.intervalTime(this.startTime,this.endTime)){
+        let newTime = util.setTime(this.startTime,this.endTime,(e.currentTarget.dataset.name == 'start'?90:-90));
+        this.startTime = newTime.startTime;
+        this.endTime = newTime.endTime;
+      }
+    },
+    areaclick(are){
+      this.activeArea = are;
+      if(are == 3){
+        let categorieslist = [];
+        let datalist = [];
+        for(let i in this.apiData.storeMap){
+          categorieslist.push(i);
+          datalist.push(this.apiData.storeMap[i]);
+        }
+        this.columnCanvas('routeType',categorieslist,datalist);
+      }else{
+        this.blockHtml(are);
+      }
+    },
+    tooClick(type){
+      this.showToo = type;
+    },
+    tooClickHide(){
+      this.showToo = 0;
+    },
+  }
+  events = {
+  }
+  onReady(){
+  }
+  onLoad() {
+    if(this.activeIndex == 1){
+      this.getShopAnalysis({
+        dateType:'day'
+      });
+    }else if(this.activeIndex == 2){
+      this.getShopAnalysis({
+        dateType:'weeks'
+      });
+      this.animation.translateX(76).step();
+      this.setData({
+        animation:this.animation.export()
+      });
+    }
+  }
+  customget(){
+    this.getShopAnalysis({
+      dateType:'custom',
+      startDate:this.startTime,
+      endDate:this.endTime
+    });
+  }
+  getShopAnalysis(params){
+    let that = this;
+    api.getShopAnalysis({
+      query: params
+    },function(data){
+      if(data.data){
+        that.apiData = data.data;
+        const shopTypeAll = that.apiData.shopType.reduce((prev, curr, index)=>{
+          const {count} = curr;
+          return parseFloat(prev.count||prev)+count;
+        })
+        const lineMapAll = that.apiData.lineMap.reduce((prev, curr, index)=>{
+          const {number} = curr;
+          return parseFloat(prev.number||prev)+number;
+        })
+        let storeMapAll = 0;
+        for(let i in that.apiData.storeMap){
+          storeMapAll+=parseFloat(that.apiData.storeMap[i]);
+        }
+        Object.assign(that.apiData,{shopTypeAll,lineMapAll,storeMapAll});
+        console.log(that.apiData);
+        // 订单数：orders
+        // 复购率：purchase
+        // 动销率：pin
+        // 动销客户数：shops
+        that.blockHtml(1);
+
+        let catlist = [];
+        let datalist = [];
+        let allnum = 0;
+        for(let i=0; i<that.apiData.salemans.length; i++){
+          catlist.push(that.apiData.salemans[i]['name']);
+          datalist.push(that.apiData.salemans[i].count);
+          allnum+=that.apiData.salemans[i].count;
+        }
+        if(catlist.length){
+          that.columnCanvas('newCanvas',catlist,datalist,true,'新增客户数：'+allnum);
+        }
+        that.blockHtml(100,'customerCanvas');
+        that.$apply();
+      }
+    });
+  }
+  blockHtml(type,canvasName){//区域
+    let shopType;
+    let serieslist = [];
+    if(type == 1){
+      shopType = this.apiData.shopType;
+    }else if(type == 2){
+      shopType = this.apiData.lineMap;
+    }else if(type == 100){
+      shopType = this.apiData.pinMap;
+    }
+    if(!shopType){
+      serieslist.push({
+        data: 100,
+        color:'#CCCCCC',
+        stroke: false,
+        format (val) {
+          return '0';
+        }
+      });
+    }else{
+      if(type == 1){
+        for(let i=0; i<shopType.length; i++){
+          serieslist.push({
+            name: shopType[i]['name'],
+            data: shopType[i].count,
+            color:this.allColor[i],
+            stroke: false,
+            format (val) {
+              return shopType[i]['name']+'('+shopType[i].count+'家)';
+            }
+          });
+        }
+      }else if(type == 2){
+        for(let i=0; i<shopType.length; i++){
+          serieslist.push({
+            name: shopType[i].name+'/'+shopType[i].number+'家('+shopType[i].ratio+'%)',
+            data: shopType[i].ratio,
+            color:this.allColor[i],
+            stroke: false,
+            format (val) {
+              return shopType[i].name;
+            }
+          });
+        }
+      }else if(type == 100){
+        let num = 0;
+        for(let i in shopType){
+          serieslist.push({
+            name: i,
+            data: shopType[i],
+            color:this.allColor[num],
+            stroke: false,
+            format (val) {
+              return i.substring(0,6)+'('+shopType[i]+'%)';
+            }
+          });
+          num++;
+        }
+      }
+    }
+    this.ringCanvas(canvasName||'routeCanvas',serieslist,canvasName?false:(type==2?true:false));
+  }
+  columnCanvas(cid, categorieslist, datalist,legend,allnum){
+    if(!datalist.length){
+      this.seriesImg[cid] = false;
+      return;
+    }else{
+      this.seriesImg[cid] = true;
+    }
+    new wxCharts({
+        canvasId: cid,
+        type: 'column',
+        animation: false,
+        categories: categorieslist,
+        series: [{
+            name: allnum || '总数',
+            color:this.allColor[0],
+            data: datalist,
+            format (val, name) {
+                return val;
+            }
+        }],
+        yAxis: {
+            format (val) {
+                return val;
+            },
+            // title: 'hello',
+            min: 0,
+            // max: cmax,
+            gridColor:"#F5F5F5",
+        },
+        xAxis: {
+            disableGrid: false,
+            type: 'calibration'
+        },
+        extra: {
+            column: {
+                width: 20,
+            }
+        },
+        width: this.windowWidth,
+        height: 300,
+        legend:legend || false,
+    });
+  }
+  ringCanvas(cid,serieslist,legend){//圆形图
+    if(!serieslist.length){
+      this.seriesImg[cid] = false;
+      return;
+    }else{
+      this.seriesImg[cid] = true;
+    }
+    new wxCharts({
+      animation: false, //是否有动画
+      canvasId: cid,
+      type: 'ring',
+      extra: {
+        ringWidth: 25,
+        pie: {
+          offsetAngle: 0
+        }
+      },
+      series: serieslist,
+      disablePieStroke: true,
+      width: this.windowWidth,
+      height: 300,
+      dataLabel: true,
+      legend: legend || false,
+      padding: 0,
+    });
+  }
+}
+</script>

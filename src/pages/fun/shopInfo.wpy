@@ -1,0 +1,241 @@
+<style lang="less">
+.container {
+	margin-bottom: 20rpx;
+}
+.border_E5 {
+	border-bottom:1rpx solid #E5E5E5;
+}
+.p30 {
+	padding:30rpx;
+}
+.no_li image {
+	width: 64rpx;
+	height: 64rpx;
+}
+.user image{
+	width:48rpx;
+	height:48rpx;
+	border-radius: 50%;
+}
+.no {
+	position: absolute;
+}
+.canvas {
+	width:115px;
+	height:115px;
+	position: absolute;
+	top:-10rpx;
+	right:-20rpx;
+}
+.aimg {
+	width:14rpx;
+	height:16rpx;
+	margin-left: 5rpx;
+}
+</style>
+<template>
+	<search inputText="请输入门店名称/助记码" screening="2" :inputShowed.sync="inputShowed" :canvasHide.sync="canvasHide"/>
+	<view class="bcfff container" wx:for="{{doorShop}}" hidden="{{inputShowed}}" @tap="toView({{item.id}})">
+		<view class="p30 flex border_E5">
+			<view class="no_li imgCenter" style="width:64rpx;">
+				<image src="../../images/fun/no_li.png"/>
+				<view class="no cfff fz20">{{item.shopCode}}</view>
+			</view>
+			<view style="width:calc(80% - 64rpx);padding-left:25rpx;">
+				<view class="c444 fz28">{{item.name}}</view>
+				<view class="cb9b fz24">{{item.storeType||''}}</view>
+			</view>
+			<view class="user flex" style="width:20%">
+				<view class="imgCenter">
+					<image src="{{item.img||'../../images/fun/defaultAvatar.png'}}" id="{{index}}" @error="imgerror"/>
+					<view class="c7B7 fz24 h1ddd" style="margin-left:10rpx;width:100rpx;">{{item.salemanName}}</view>
+				</view>
+			</view>
+		</view>
+		<view class="flex">
+			<view class="p30" style="width:60%">
+				<view class="c7B7 fz26">本月进货</view>
+				<view style="margin:10rpx 0rpx;">
+					<text class="cFF6 fz36" style="margin-right:10rpx">{{item.salesAmount}}</text>
+					<text class="c7B7 fz22">元  / {{item.orderCount}}笔订单</text>
+				</view>
+				<view class="fz22">
+					<text class="c7B7">同比上月</text>
+					<text class="{{item.ratio>0?'cFF6':item.ratio<0?'c3CC':'c7B7'}}" style="margin-left:10rpx;">{{item.ratio}}%</text>
+					<image class="aimg" src="../../images/fun/{{item.ratio>=0?'rose':'fall'}}.png" wx:if="{{item.ratio!=0}}"></image>
+				</view>
+			</view>
+			<view class="relative ove-h" style="width:20%;right:20rpx;"><canvas canvas-id="canvas_average_{{index}}" disable-scroll="true" hidden="{{canvasHide}}" class="canvas"></canvas></view>
+			<view class="relative ove-h" style="width:20%"><canvas canvas-id="canvas_visit_{{index}}" disable-scroll="true" hidden="{{canvasHide}}" class="canvas"></canvas></view>
+		</view>
+	</view>
+	<view class="cb9b fz20 tc">
+		<view wx-if="{{loadInfo==1}}">加载中...</view>
+		<view wx-if="{{loadInfo==2}}">—— 我是有底线的 ——</view>
+		<view wx-if="{{loadInfo==3}}" style="padding:50rpx 0rpx">—— 暂无数据 ——</view>
+	</view>
+</template>
+<script>
+import wepy from 'wepy';
+import api from '../../utils/api';
+import search from '../../components/common/search';
+const wxCharts = require('../../utils/wxcharts.js');
+export default class shopInfo extends wepy.page {
+  config = {
+    "navigationBarTitleText": "门店通",
+		"onReachBottomDistance": 50
+  }
+  data = {
+		inputShowed:false,
+		canvasHide:false,
+		doorShop:[],
+		params:{
+			search: '',
+			pageNo: 1,
+			pageSize: 8,
+		},
+		loadInfo: 0,
+  }
+  components = {
+		search
+	}
+  methods = {
+		toView(id){
+			this.$navigate('shopInfoDetails?id='+id);
+		}
+  }
+	watch = {
+		"doorShop":(newVal, oldVal)=>{
+			for(let i=oldVal.length; i<newVal.length; i++){
+				console.log(newVal[i]);
+				this.setCanvas('canvas_average_'+i,'进货周期','average',newVal[i]);
+				this.setCanvas('canvas_visit_'+i,'月均拜访','visit',newVal[i]);
+			}
+		}
+	}
+	events = {
+		'getSearch':(vals,backFun)=>{//搜索
+			api.doorShopList({
+				query:{
+					search: vals,
+					pageNo: 1,
+					pageSize: 100,
+				}
+			},data=>{
+				backFun(data.data,'name'/*,function(msg){
+					console.log(msg);
+				}*/);
+			});
+		},
+		'backSearch':data=>{//选中搜索回调
+			this.$navigate('shopInfoDetails?id='+data.id);
+		},
+		'confirmSearch':data=>{//确认搜索
+			this.params.pageNo = 1;
+			this.params.salemanId = data.busId;
+			this.params.shopType = data.keyId.id;
+			this.apiDoorShopList();
+		},
+	}
+  onLoad() {
+		this.apiDoorShopList();
+  }
+	onReachBottom () {
+    let that = this;
+    if(that.loadInfo == 0){
+      that.params.pageNo++;
+      that.apiDoorShopList(data=>{
+        that.doorShop = that.doorShop.concat(data);
+      });
+    }
+  }
+	imgerror(e){
+		this.doorShop[e.target.id].img = '../../images/fun/defaultAvatar.png';
+	}
+	apiDoorShopList(backFun){
+		let that = this;
+		// that.params.dealType = that.chs.type;
+    // that.params.status = that.activeIndex;
+    that.loadInfo = 1;
+		api.doorShopList({
+			//门店通列表接口  参数：search  搜索框的文字（String），shopType：门店类型（Long）,salemanId：业务员id （Long），pageNo：页码（int） ，pageSize：每页条数（int）
+			query:this.params
+		},data=>{
+			if(backFun){
+        backFun(data.data);
+      }else{
+        that.doorShop = data.data;
+      }
+      if(data.data.length == that.params.pageSize || that.params.pageNo == 1){
+        that.loadInfo = 0;
+        if(that.doorShop.length == 0){
+          that.loadInfo = 3;
+        }
+      }else{
+        that.loadInfo = 2;
+      }
+      that.$apply();
+		});
+	}
+	setCanvas(id,text,cval,vall){
+		let ctime,color,series;
+		if(cval == 'average'){
+			ctime = vall[cval] ? vall[cval]+'天' : '—';
+			color = ctime=='—'?'#E5E5E5':'#77d6b6';
+			series = [{
+				// name: '2',
+				data: vall[cval],
+				color:'#E5E5E5',
+				stroke: false
+			},{
+				// name: '成交量4',
+				data: vall[cval]>=30?0:30-vall[cval],
+				color: color,
+				stroke: false
+			}];
+		}else if(cval == 'visit'){
+			ctime = vall[cval] ? vall[cval]+'次' : '—';
+			color = '#f5c070';
+			series = [{
+				// name: '2',
+				data: vall[cval]>=10?0:10-vall[cval],
+				color:'#E5E5E5',
+				stroke: false
+			},{
+				// name: '成交量4',
+				data: vall[cval],
+				color: color,
+				stroke: false
+			}];
+		}
+		new wxCharts({
+			animation: false,
+			canvasId: id,
+			type: 'ring',
+			extra: {
+				ringWidth: 8,//圆环的宽度
+				// pie: {
+				// 	offsetAngle: -45//圆环的角度
+				// }
+			},
+      subtitle: {
+        name: text,
+        color: '#7B7C87',
+        fontSize: 11
+      },
+			title: {
+				name: ctime,
+				color: '#444652',
+				fontSize: 11
+			},
+			series: series,
+			disablePieStroke: true,
+			width: 115,
+			height: 115,
+			dataLabel: false,
+			legend: false,
+			padding: 0
+		});
+	}
+}
+</script>

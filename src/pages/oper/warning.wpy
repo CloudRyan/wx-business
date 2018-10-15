@@ -1,0 +1,90 @@
+<style lang="less">
+</style>
+<template>
+  <search inputText="请输入商品名称搜索" :inputShowed.sync="inputShowed"/>
+  <view class="bcfff container" hidden="{{inputShowed}}">
+    <Warning :list.sync="warlist"/>
+  </view>
+  <view class="cb9b fz20 tc">
+    <view wx-if="{{loadInfo==1}}">加载中...</view>
+    <view wx-if="{{loadInfo==2}}">—— 我是有底线的 ——</view>
+    <view wx-if="{{loadInfo==3}}" style="padding:50rpx 0rpx">—— 暂无数据 ——</view>
+  </view>
+</template>
+<script>
+import wepy from 'wepy';
+import api from '../../utils/api';
+import search from '../../components/common/search';
+import Warning from '../../components/list/warning';
+export default class warning extends wepy.page {
+  config = {
+    "navigationBarTitleText": "库存预警",
+		"onReachBottomDistance": 50
+  }
+  data = {
+    inputShowed:false,
+    loadInfo:0,
+    params:{
+      pageNo:1,
+      pageSize:8,
+      goodsName:'',
+		},
+    warlist:[]
+  }
+	components = {
+    search,
+    Warning
+  }
+  methods = {
+  }
+  events = {
+		'getSearch':(vals,oneBackFun)=>{
+			api.findStockWarringList({
+				query:{
+          pageNo:1,
+          pageSize:100,
+          goodsName:vals,
+				}
+			},data=>{
+        console.log(data);
+				oneBackFun(data.data);
+				// twoBackFun(data.data,'Warning');
+			});
+		}
+	}
+  onReachBottom () {
+    let that = this;
+    if(that.loadInfo == 0){
+      that.params.pageNo++;
+      that.findStockWarringList(data=>{
+        that.warlist = that.warlist.concat(data);
+      });
+    }
+  }
+  findStockWarringList(backFun){
+    let that = this;
+    that.loadInfo = 1;
+    api.findStockWarringList({
+      query:this.params
+    },data=>{
+      if(backFun){
+        backFun(data.data);
+      }else{
+        that.warlist = data.data;
+      }
+      if(data.data.length == that.params.pageSize || that.params.pageNo == 1){
+        that.loadInfo = 0;
+        if(that.warlist.length == 0){
+          that.loadInfo = 3;
+        }
+      }else{
+        that.loadInfo = 2;
+      }
+      this.$apply();
+    });
+  }
+  async onLoad() {
+    this.findStockWarringList();
+  }
+}
+</script>

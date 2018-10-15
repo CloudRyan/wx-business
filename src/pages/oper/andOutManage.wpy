@@ -1,0 +1,171 @@
+<style lang="less">
+.orderList {
+  line-height: 50rpx;
+	padding:20rpx 30rpx;
+	margin-top: 20rpx;
+}
+</style>
+<template>
+  <search :inputText.sync="inputText" :screening.sync="state" :inputShowed.sync="inputShowed"/>
+	<view hidden="{{inputShowed}}">
+  	<view class="bcfff orderList" wx:for="{{orderList}}" @tap="seeDetails({{item}})">
+  		<view>
+  			<view class="inline-block c343 fz28">{{TYPE==0?item.no:item.orderNo}}</view>
+  			<view class="right fz26 {{item.status=='待仓库上架'?'cFFA':(item.status=='待审核')?'cFF6':''}}" wx:if="{{TYPE == 0}}">{{item.status}}</view>
+        <view class="right fz26 {{item.statusTxt=='待出库'?'cFF6':(item.statusTxt=='配货复核')?'cFFA':(item.statusTxt=='待发货')?'cFF6':''}}" wx:if="{{TYPE == '1'}}">{{item.statusTxt=='待发货'?'待出库':item.statusTxt}}</view>
+        <!-- <view class="right fz26 cFFA"></view> -->
+  		</view>
+  		<view>
+  			<view class="inline-block fz26 c7B7">{{TYPE==0?'商品总计':'出库总计'}}：</view>
+  			<view class="inline-block c343 fz26">共 {{TYPE==0?item.goodsQuantity:item.goodsKind}}件 {{TYPE==0?item.varietyQuantity:item.goodsNum}}种 商品</view>
+  			<view class="right fz26 c444">￥{{TYPE==0?item.totalAmount:item.orderAmount}}</view>
+  		</view>
+  		<view>
+  			<view class="inline-block fz26 c7B7">{{TYPE==0?'入库仓库':'出库仓库'}}：</view>
+  			<view class="inline-block c343 fz26">{{item.storageName}}</view>
+  			<view class="time right c7B7 fz26">{{TYPE==0?item.gmtIn:item.createTime}}</view>
+  		</view>
+  	</view>
+    <view class="cb9b fz20 tc">
+      <view wx-if="{{loadInfo==1}}">加载中...</view>
+      <view wx-if="{{loadInfo==2}}">—— 我是有底线的 ——</view>
+      <view wx-if="{{loadInfo==3}}" style="padding:50rpx 0rpx">—— 暂无数据 ——</view>
+    </view>
+  </view>
+</template>
+<script>
+import wepy from 'wepy';
+import api from '../../utils/api';
+import search from '../../components/common/search';
+export default class andOutManage extends wepy.page {
+  config = {
+    "navigationBarTitleText": "",
+		"onReachBottomDistance": 50
+  }
+  data = {
+    state:'',
+    inputText:'',
+    inputShowed:false,
+    params:{
+      pageNo:1,
+      pageSize:8,
+      status:'',
+      shopName:'',
+      userId:'',
+		},
+    orderList:[],
+    loadInfo:0,
+    TYPE:null,
+  }
+	components = {
+    search,
+  }
+  methods = {
+    seeDetails(data){
+      if(this.TYPE == 0){
+        this.$navigate('andInManageDetails?type='+this.TYPE+'&data='+JSON.stringify(data));
+      }else{
+        this.$navigate('andOutManageDetails?id='+data.orderId);
+      }
+    },
+  }
+  watch = {
+    // "busId":(newVal,oldVal)=>{
+    //   if(newVal != oldVal){
+    //     this.params.pageNo = 1;
+    //     this.params.userId = newVal;
+    //     this.findStockInList();
+    //   }
+    // }
+	}
+  events = {
+		'getSearch':(vals,backFun)=>{
+      let query = {
+        pageNo:1,
+        pageSize:100,
+      };
+      if(this.TYPE == 0){
+        query.stockInNo = vals;
+      }else {
+        query.orderNo = vals;
+      }
+			api[this.interfaceUrl[this.TYPE]]({
+				query
+			},data=>{
+				if(this.TYPE == 0){
+          backFun(data.data,'no','storageName','status');
+        }else{
+          backFun(data.data,'orderNo','storageName','shopName','createTime');
+        }
+			});
+		},
+		'backSearch':data=>{
+      if(this.TYPE == 0){
+        this.$navigate('andInManageDetails?type='+this.TYPE+'&data='+JSON.stringify(data));
+      }else{
+        this.$navigate('andOutManageDetails?id='+data.orderId);
+      }
+		},
+		'confirmSearch':(data)=>{
+      this.params.pageNo = 1;
+      this.params.status = data.inyStatus.id;
+      this.params.storageId = data.storeId.id;
+      this.params.dateType = data.timeId.type;
+      this.params.startDate = data.startDate;
+      this.params.endDate = data.endDate;
+			this.ajax();
+    }
+	}
+  onReachBottom () {
+    let that = this;
+    if(that.loadInfo == 0){
+      that.params.pageNo++;
+      that.ajax(data=>{
+        that.orderList = that.orderList.concat(data);
+      });
+    }
+  }
+  ajax(backFun){
+    const that = this;
+    that.loadInfo = 1;
+    api[this.interfaceUrl[this.TYPE]]({
+      query:this.params
+    },data=>{
+      if(data.data && data.data.length){
+        data.data.map((item)=>{
+          let mydate = new Date(item.gmtIn);
+          item.gmtIn = mydate.getFullYear()+'-'+(mydate.getMonth()+1)+'-'+mydate.getDate()+' '+(mydate.getHours()>9?mydate.getHours():'0'+mydate.getHours())+':'+(mydate.getMinutes()>9?mydate.getMinutes():'0'+mydate.getMinutes());
+          return item;
+        });
+      }
+
+      if(backFun){
+        backFun(data.data);
+      }else{
+        that.orderList = data.data;
+      }
+      if(data.data.length == that.params.pageSize || that.params.pageNo == 1){
+        that.loadInfo = 0;
+        if(that.orderList.length == 0){
+          that.loadInfo = 3;
+        }
+      }else{
+        that.loadInfo = 2;
+      }
+      this.$apply();
+    });
+  }
+  onLoad(option) {
+    this.TYPE = option.type;
+    this.interfaceUrl = ['findStockInList','getOutStockList'];//出库  入库
+    const typeName = ['入库管理','出库管理'];
+    wepy.setNavigationBarTitle({
+      title: typeName[this.TYPE]
+    });
+    this.inputText = this.TYPE==0 ? '请输入入库单号查询' : '请输入出库单号查询';
+    this.state = this.TYPE==0 ? 3 : 4;
+    console.log(this.state);
+    this.ajax();
+  }
+}
+</script>

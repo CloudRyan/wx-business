@@ -1,0 +1,259 @@
+<style lang="less">
+@borderE5:#E5E5E5;
+.container>view:not(:last-child) {
+	margin-bottom: 20rpx;
+}
+.p30 {
+	padding:30rpx;
+}
+.leftInfo>view:not(:last-child) {
+	margin-bottom:15rpx;
+}
+.ftitle {
+	border:1rpx solid @borderE5;
+	border-left:0rpx;
+	border-radius: 8rpx;
+	position:relative;
+	top: 20rpx;
+}
+.ftitle>view {
+	width: 120rpx;
+	height: 50rpx;
+	line-height: 50rpx;
+	text-align: center;
+	border-left: 1rpx solid @borderE5;
+}
+.ftitle>view.active {
+	background-color: #f3f4f7;
+}
+.can_bor {
+	border-top: 1rpx solid @borderE5;
+}
+.can_bor>view {
+	width: 33.33%;
+	padding-top:20rpx;
+	padding-bottom:30rpx;
+}
+.tip_l {
+	height: 90rpx;
+	line-height: 90rpx;
+	margin-left: 30rpx;
+	padding-right: 30rpx;
+	border-bottom: 1rpx solid @borderE5;
+}
+</style>
+<template>
+	<view class="container" @tap="tooClickHide">
+		<view class="bcfff p30 flex">
+			<view class="leftInfo">
+				<view class="fz30 c444">{{shopDetails.shopName}}</view>
+				<view class="fz26 c7B7">联系人 : {{shopDetails.contact}} <text style="margin-left:20rpx;">{{shopDetails.contactTel || ''}}</text></view>
+				<view class="fz26 c7B7">地\r\n\r\n\r\n址 : {{shopDetails.contactAddress}}</view>
+			</view>
+			<view>
+				<view class="c3CC border1 fz26 tc bcE0f h1ddd" style="width:126rpx; height:40rpx; line-height: 40rpx;border-radius:6rpx;" wx:if="{{shopDetails.storeType}}">{{shopDetails.storeType}}</view>
+			</view>
+		</view>
+		<view class="bcfff">
+			<view class="flex tip_l">
+				<view class="c444 fz28 imgCenter">客户下单趋势</view>
+				<view>
+					<view class="flex cb9b fz26 ove-h ftitle">
+						<view class="{{activeType=='month'&&'c444 active'}}" @tap="tabClick('month')">本月</view>
+						<view class="{{activeType=='lastMonth'&&'c444 active'}}" @tap="tabClick('lastMonth')">上月</view>
+						<view class="{{activeType=='year'&&'c444 active'}}" @tap="tabClick('year')">本年</view>
+					</view>
+				</view>
+			</view>
+			<view>
+				<canvas hidden="{{!isdataOne}}" style="width:100%;height:{{canvasHeight}}px;" canvas-id="lineCanvas" bindtouchend="touchEndHandler"></canvas>
+				<view hidden="{{isdataOne}}" style="padding:80rpx 0rpx 50rpx 0rpx;"><image src="../../images/null.png" style="width:249rpx;height:190rpx;margin:0 auto;display:block;"></image></view>
+			</view>
+			<view class="flex tc can_bor">
+				<view>
+					<text class="fz28 c444">{{clientOrder.orderCount}}</text>
+					<view class="fz26 cb9b">订单数</view>
+				</view>
+				<view>
+					<text class="fz28 c444">{{clientOrder.orderAmount}}</text>
+					<view class="fz26 cb9b">订单金额（元）</view>
+				</view>
+				<view>
+					<text class="fz28 c444">{{clientOrder.visit}}</text>
+					<view class="fz26 cb9b">拜访签到</view>
+				</view>
+				<!-- <view>
+					<text class="fz28 c444">40%</text>
+					<view class="fz26 cb9b">拜访成交率</view>
+				</view> -->
+			</view>
+		</view>
+		<view class="bcfff">
+			<view class="fz28 c444 tip_l" @tap.stop="tooClick(1)">品类进货分析 <text class="problem">?</text>
+				<view hidden="{{showToo!=1}}" @tap.stop="tooClickHide()" class="answer bc3CC cfff" style="margin-left:160rpx;margin-top:-170rpx;">
+          <text>按三级类目统计客户下单占比</text>
+          <image src="../../images/oper/close.png"></image>
+          <view style="margin-left:0rpx;"></view>
+        </view>
+			</view>
+			<view>
+				<canvas wx:if="{{shopDetails.category.length}}" canvas-id="canvas_1" disable-scroll="true" style="width:100%;height:300px;padding-bottom:30rpx;"/>
+				<view wx:if="{{!shopDetails.category.length}}" style="padding:80rpx 0rpx 50rpx 0rpx;"><image src="../../images/null.png" style="width:249rpx;height:190rpx;margin:0 auto;display:block;"></image></view>
+			</view>
+		</view>
+	</view>
+</template>
+<script>
+import wepy from 'wepy';
+import api from '../../utils/api';
+import util from '../../utils/util';
+const wxCharts = require('../../utils/wxcharts.js');
+export default class shopInfoDetails extends wepy.page {
+  config = {
+    "navigationBarTitleText": "门店详情",
+  }
+  data = {
+		isdataOne:true,
+		showToo:0,
+		windowWidth:wepy.getSystemInfoSync().windowWidth,
+		activeType:'month',
+    canvasHeight:200,
+    lineChart:null,
+		shopDetails:null,
+		clientOrder:null,
+  }
+  components = {
+	}
+  methods = {
+		tooClick(type){
+      this.showToo = type;
+    },
+    tooClickHide(){
+      this.showToo = 0;
+    },
+		tabClick (type) {//month,lastMonth,year
+      this.activeType = type;
+      this.doorShopOrderRatio();
+    },
+    touchEndHandler (e) {
+        this.lineChart.scrollEnd(e);
+        this.lineChart.showToolTip(e, {
+          format:(item, category)=> {
+            return category + ' ' + item.name + ':' + item.data
+          }
+        });
+    }
+  }
+  events = {
+  }
+  async onLoad(option) {
+		this.optionId = option.id;
+		api.doorShopDetail({
+			query:{
+				shopId:this.optionId//option.id //19820
+			}
+		},data=>{
+			this.shopDetails = data.data;
+			this.setCanvas('canvas_1');
+			this.$apply();
+		});
+		this.doorShopOrderRatio();
+  }
+	doorShopOrderRatio(){
+		api.doorShopOrderRatio({
+			query:{
+				shopId:this.optionId,
+				dateType:this.activeType
+			}
+		},data=>{
+			this.clientOrder = data.data;
+			this.initCharts(data.data.shopOrder);
+			this.$apply();
+		});
+	}
+	initCharts(shopOrder){
+		let categorieslist=[],
+				datalist=[];
+		for(let i in shopOrder){
+			categorieslist.push(i);
+			datalist.push(shopOrder[i]);
+		}
+		if(!categorieslist.length){
+			return this.isdataOne = false;
+		}else if(this.activeType == 'year'){
+			categorieslist = ['一月','二月','三月','四月','五月','六月','七月','八月','九月','十月','十一月','十二月'];
+		}
+    this.lineChart = new wxCharts({
+      canvasId: 'lineCanvas',
+      type: 'line',//line area
+      categories: categorieslist,
+      animation: false,
+      series: [{
+        name: '',
+        color: util.themeColor,
+        defaultColor:'#F00',
+        data: datalist,
+        format (val, name) {
+          return '￥'+val;
+        },
+      }],
+      xAxis: {
+        fontColor: '#B9B9C1',
+        disableGrid: true,
+      },
+      yAxis: {
+        min: 0,
+        fontColor: "#CCCCCC",
+        gridColor:"#F5F5F5",
+        // format (val, name) {
+        //   return (val/10000).toFixed(2);
+        // },
+      },
+      width: this.windowWidth,
+      height: this.canvasHeight,
+      dataLabel: false,// 是否在图表中显示数据内容值
+      legend: false, // 是否显示图表下方各类别的标识
+      dataPointShape: false,// 是否在图表中显示数据点图形标识
+      enableScroll: false,// 是否开启图表可拖拽滚动
+      extra: {
+        lineStyle: 'curve',
+      }
+    });
+  }
+	setCanvas(id){
+		if(!this.shopDetails.category || !this.shopDetails.category.length){
+			return;
+		}
+		let serieslist = [];
+		this.shopDetails.category.forEach((item,index)=>{
+			serieslist.push({
+				name: item.name.substring(0,6),//+'￥'+item.number+'元',
+				data: item.ratio,
+				color: util.allColor[index],
+				stroke: false,
+				format (val, name) {
+          return val+'%(￥'+item.number+')';
+        },
+			});
+		})
+		new wxCharts({
+			animation: false,
+			canvasId: id,
+			type: 'ring',
+			extra: {
+				ringWidth: 35,//圆环的宽度
+				pie: {
+					offsetAngle: 90//圆环的角度
+				}
+			},
+			series: serieslist,
+			disablePieStroke: true,
+			width: this.windowWidth,
+			height: 300,
+			dataLabel: true,
+			legend: true,
+			padding: 0
+		});
+	}
+}
+</script>

@@ -1,0 +1,327 @@
+<style lang="less">
+@import '../../styles/style.less';
+.best {
+  height:50rpx;
+  line-height: 50rpx;
+}
+.best .vieweb {
+  width:1rpx;
+  height:26rpx;
+  margin-left: 10rpx;
+  margin-right: 10rpx;
+}
+.best .vieweb view {
+  height:100%;
+  width:100%;
+  border-radius:0rpx 10rpx 10rpx 0rpx;
+  animation:mymove 1.5s;
+}
+@keyframes mymove {
+  from {width:0rpx;}
+  to {width:100%;}
+}
+.showAllText {
+  width:50%;
+  animation:showAllText 1.5s;
+}
+@keyframes showAllText {
+  from {width:120rpx;}
+  to {width:50%;}
+}
+.hideAllText {
+  width:120rpx;
+  animation:hideAllText 1.5s;
+}
+@keyframes hideAllText {
+  from {width:50%;}
+  to {width:120rpx;}
+}
+.trtite {
+  width:100%;
+}
+.answer view {
+  bottom:auto;
+  top:-20rpx;
+  transform:rotate(180deg);
+}
+.answer image {
+  top:auto;
+  bottom: 15rpx;
+}
+</style>
+<template>
+  <view @tap="tooClickHide">
+    <view class="container bcfff flex c7B7 fz24 {{activeIndex!=5?'mb20':'mb1'}}">
+      <view class="trtite">
+        <view class="flex">
+          <view @tap.stop="seeclick({{$event}})" data-index="1" data-type="day" class="{{activeIndex==1&&'active'}}"><view>今天</view></view>
+          <view @tap.stop="seeclick({{$event}})" data-index="2" data-type="weeks" class="{{activeIndex==2&&'active'}}"><view>本周</view></view>
+          <view @tap.stop="seeclick({{$event}})" data-index="3" data-type="month" class="{{activeIndex==3&&'active'}}"><view>本月</view></view>
+          <view @tap.stop="seeclick({{$event}})" data-index="4" data-type="year" class="{{activeIndex==4&&'active'}}"><view>本年</view></view>
+          <view @tap.stop="seeclick({{$event}})" data-index="5" class="{{activeIndex==5&&'active'}}"><view>自定义</view></view>
+        </view>
+        <view class="active-x" animation="{{animation}}"></view>
+      </view>
+    </view>
+    <view class="indate mb20 bcfff flex fz24 c7B7" style="padding:20rpx;" hidden="{{activeIndex!=5}}">
+      <picker mode="date" value="{{startTime}}" data-name="start" end="{{endTime}}" @change="bindDateChange">
+        <view class="picker">{{startTime}}</view>
+      </picker>
+      <view class="indz">至</view>
+      <picker mode="date" value="{{endTime}}" data-name="end" start="{{startTime}}" @change="bindDateChange">
+        <view class="picker">{{endTime}}</view>
+      </picker>
+      <view class="inbtn bc3CC cfff tc" @tap="customClick">确认</view>
+    </view>
+    <view class="container mb20 points bcfff flex tc">
+      <view>
+        <view class="c7B7 fz24">商品总销量</view>
+        <view class="32pt c444">{{apiData.salesNumber}}</view>
+      </view>
+      <view>
+        <view class="c7B7 fz24">订单数</view>
+        <view class="32pt c444">{{apiData.orderCount}}</view>
+      </view>
+      <view @tap.stop="tooClick(1)">
+        <view class="c7B7 fz24">商品动销率<text class="problem">?</text></view>
+        <view hidden="{{showToo!=1}}" @tap.stop="tooClickHide()" class="answer bc3CC cfff" style="margin-left:-120rpx;margin-top:25rpx;">
+          <text>时间段内各种类商品销售情况的指标，销售商品种数/总商品种数=动销率</text>
+          <image src="../../images/oper/close.png"></image>
+          <view style="margin-left:245rpx;"></view>
+        </view>
+        <view class="32pt c444">{{!apiData.pinRatio?'-':apiData.pinRatio+'%'}}</view>
+      </view>
+      <view>
+        <view class="c7B7 fz24">商品总数</view>
+        <view class="32pt c444">{{apiData.goodsNumber}}</view>
+      </view>
+    </view>
+    <view class="bcfff mb20">
+      <view class="c444 fz26 btitle">商品销量 TOP10</view>
+      <scroll-view scroll-x="true" style="display: flex;white-space: nowrap;">
+        <view style="padding:10rpx 20rpx 20rpx 20rpx">
+          <view class="best" wx:for="{{apiData.salesTop}}">
+            <view class="c444 fz24 inline-block nowrap inline-block {{showText==true?'showAllText':(showText==false?'hideAllText':'')}}" @tap="showTextClick">{{item.name}}</view>
+            <view class="vieweb inline-block" style="width:{{item.count/maxCount*(windowWidth*0.6)}}px;">
+              <view style="background-color:{{index==0?'#FFA530':allColor[0]}}"></view>
+            </view>
+            <view class="c444 fz20 nownum inline-block">{{item.count}}</view>
+          </view>
+          <image wx:if="{{!apiData.salesTop.length}}" src="../../images/null.png" style="width:249rpx;height:190rpx;margin:90rpx auto;display:block;"></image>
+        </view>
+      </scroll-view>
+    </view>
+    <view class="bcfff">
+      <view class="c444 fz26 btitle">商品动销率</view>
+      <view wx:if="{{!isCurve}}" style="padding:90rpx 0rpx;"><image src="../../images/null.png" style="width:249rpx;height:190rpx;margin:auto;display:block;"></image></view>
+      <canvas hidden="{{!isCurve}}" style="width:100%;height:200px;margin-top:30rpx;" canvas-id="effCanvas" class="canvas" bindtouchend="touchEndHandler"></canvas>
+      <!-- <canvas style="width:100%;height:200px;margin-top:30rpx;" canvas-id="effCanvas" disable-scroll="true" class="canvas"
+      bindtouchstart="touchHandler" bindtouchmove="moveHandler" bindtouchend="touchEndHandler"></canvas> -->
+    </view>
+  </view>
+</template>
+<script>
+import wepy from 'wepy';
+import api from '../../utils/api';
+import util,{allColor} from '../../utils/util';
+const wxCharts = require('../../utils/wxcharts.js');
+export default class salesAnalysis extends wepy.page {
+  config = {
+    "navigationBarTitleText": "销量分析",
+    // "enablePullDownRefresh": true,
+  }
+  data = {
+    allColor,
+    apiData:{},
+    maxCount:0,
+    activeIndex: 2,
+    sliderLeft: 0,
+    animation: wepy.createAnimation({//动画
+      duration: 300,
+      timingFunction: 'linear'
+    }),
+    startTime: util.currentWeek().start,
+    endTime: util.currentWeek().end,
+    windowWidth: wepy.getSystemInfoSync().windowWidth,
+    windowSystem: wepy.getSystemInfoSync().system,
+    lineChart: null,
+    scrollTop: 0,
+    touchesY: 0,
+    lastY: 0,
+    isScroll: false,
+    isCurve: false,
+    showText: null,
+    showToo: 0
+  }
+  components = {
+  }
+  methods = {
+    seeclick(e){
+      this.showToo = 0;
+      this.activeIndex = e.currentTarget.dataset.index;
+      this.animation.translateX(e.target.offsetLeft).step();
+      this.setData({
+        animation:this.animation.export()
+      });
+      if(this.activeIndex != 5) {
+        this.getSalesAnalysis({
+          dateType:e.currentTarget.dataset.type
+        });
+      }else{
+        this.customget();
+      }
+    },
+    customClick(){
+      this.customget();
+    },
+    bindDateChange (e) {
+      let that = this;
+      if(e.currentTarget.dataset.name == 'start'){
+        this.startTime = e.detail.value
+      }else{
+        this.endTime = e.detail.value
+      }
+      if(util.intervalTime(this.startTime,this.endTime)){
+        let newTime = util.setTime(this.startTime,this.endTime,(e.currentTarget.dataset.name == 'start'?90:-90));
+        this.startTime = newTime.startTime;
+        this.endTime = newTime.endTime;
+      }
+    },
+    // touchHandler (e) {
+    //   this.lineChart.scrollStart(e);
+    // },
+    // moveHandler (e) {
+    //   this.lineChart.scroll(e);
+    // },
+    touchEndHandler (e) {
+      this.lineChart.scrollEnd(e);
+      this.lineChart.showToolTip(e, {
+        format:(item, category)=> {
+          return category + ' ' + item.name + ':' + item.data
+        }
+      });
+    },
+    showTextClick(){
+      this.showText = this.showText == true ? false : true;
+    },
+    tooClick(type){
+      this.showToo = type;
+    },
+    tooClickHide(){
+      this.showToo = 0;
+    },
+  }
+  events = {
+  }
+  initCharts(curveTime,curveTimeList){
+    if(this.activeIndex==4 && curveTime.length == 12){
+      curveTime = ['一月','二月','三月','四月','五月','六月','七月','八月','九月','十月','十一月','十二月'];
+    }
+    this.lineChart = new wxCharts({
+      canvasId: 'effCanvas',
+      type: 'line',//line area
+      categories: curveTime,
+      animation: false,
+      series: [{
+        name: '',
+        color:allColor[0],
+        defaultColor:'#F00',
+        data: curveTimeList,
+        format (val, name) {
+          return val.toFixed(2)+"%";
+        },
+        method(n,i){
+          return '#F00';
+        },
+      }],
+      xAxis: {
+        fontColor: '#B9B9C1',
+        disableGrid: true,
+      },
+      yAxis: {
+        format (val, name) {
+          return val+"%";
+        },
+        min: 0,
+        fontColor: "#CCCCCC",
+        gridColor:"#F5F5F5",
+      },
+      width: this.windowWidth,
+      height: 200,
+      dataLabel: false,// 是否在图表中显示数据内容值
+      legend: false, // 是否显示图表下方各类别的标识
+      dataPointShape: false,// 是否在图表中显示数据点图形标识
+      enableScroll: false,// 是否开启图表可拖拽滚动
+      extra: {
+        lineStyle: 'curve',
+      }
+    });
+  }
+  // onPageScroll(e){
+  //   this.scrollTop = e.scrollTop;
+  // }
+  // systemScroll(top){
+  //   if(this.isScroll){
+  //     wepy.pageScrollTo({
+  //       scrollTop: top,
+  //       duration: this.windowSystem.indexOf('iOS') != -1 ? 80 : 0
+  //     });
+  //   }
+  // }
+  onLoad() {
+    if(this.activeIndex == 1){
+      this.getSalesAnalysis({
+        dateType:'day'
+      });
+    }else if(this.activeIndex == 2){
+      this.getSalesAnalysis({
+        dateType:'weeks'
+      });
+      this.animation.translateX(76).step();
+      this.setData({
+        animation:this.animation.export()
+      });
+    }
+    // this.initCharts(['2018.6.1','2018.6.2','2018.6.3','2018.6.4','2018.6.5','2018.6.6','2018.6.7'],
+    // [20,80,55,89,100,17,50]);
+  }
+  customget(){
+    this.getSalesAnalysis({
+      dateType:'custom',
+      startDate:this.startTime,
+      endDate:this.endTime
+    });
+  }
+  getSalesAnalysis(params){
+    let that = this;
+    that.showText = null;
+    // that.apiData.salesTop = [];
+    api.getSalesAnalysis({
+      query: params
+    },data=>{
+      if(data.data){
+        that.apiData = data.data;
+        that.maxCount = 0;
+        for(let t=0; t<that.apiData.salesTop.length; t++){
+          if(that.apiData.salesTop[t].count>that.maxCount){
+            that.maxCount = that.apiData.salesTop[t].count;
+          }
+        }
+        let curveTime = [];
+        let curveTimeList = [];
+        for(let g in that.apiData.goodsPinRatio){
+          curveTime.push(g);
+          curveTimeList.push(that.apiData.goodsPinRatio[g]);
+        }
+        if(curveTime.length){
+          this.isCurve = true;
+          this.initCharts(curveTime,curveTimeList);
+        }else{
+          this.isCurve = false;
+        }
+        that.$apply();
+      }
+    });
+  }
+}
+</script>

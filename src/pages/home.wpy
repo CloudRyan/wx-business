@@ -1,0 +1,477 @@
+<style lang="less">
+.postir {
+  position: absolute;
+  right:-10rpx;
+  top:-10rpx;
+  height:38rpx;
+  width:38rpx;
+  line-height: 38rpx;
+  border-radius: 50%;
+  color:#FFFFFF;
+  background-color: #FF6644;
+}
+.container {
+  margin-bottom: 15rpx;
+}
+swiper,.topzs {
+  height:330rpx;
+}
+.topzs {
+  position:relative;
+}
+.topBackImg {
+  width:100%;
+  height:100%;
+  position:absolute;
+  bottom:0rpx;
+}
+// .topb {
+//   width:100%;
+//   height:36rpx;
+//   position: relative;
+//   top:-10rpx;
+// }
+.swiper-item {
+  padding-top:25rpx;
+  .tw {
+    margin:20rpx 0px;
+  }
+  .tt {
+    padding:0rpx 50rpx;
+    text {
+      margin-left: 20rpx;
+    }
+  }
+}
+.pflt {
+  padding:30rpx 50rpx 20rpx 50rpx;
+}
+.pflt>view>view {
+  position: relative;
+  margin-bottom: 5rpx;
+}
+.choose {
+  height:50rpx;
+  border:1px solid #E5E5E5;
+  border-radius: 10rpx;
+}
+.choose view {
+  height:100%;
+  // padding:0px 30rpx;
+  width:140rpx;
+  text-align: center;
+  line-height: 50rpx;
+}
+.jTime {
+  border:1px solid #E5E5E5;
+  padding: 7rpx 25rpx;
+  border-radius: 30rpx;
+}
+.rightTime {
+  margin-left: 20rpx;
+}
+.rightTime image {
+  width:26rpx;
+  height:16rpx;
+  margin-left: 10rpx;
+}
+.prompt {
+  position: absolute;
+  top: 0rpx;
+  left: 0rpx;
+  right: 0rpx;
+  bottom: 0rpx;
+  display: flex;
+  background: rgba(0,0,0,.75);
+  z-index: 9;
+}
+.prompt image {
+  width:100%;
+
+}
+</style>
+<template>
+  <view class="container bcfff" hidden="{{!isHome}}">
+    <view class="topzs">
+      <image class="topBackImg" src="../images/home/homeTop.jpg"></image>
+      <swiper class="tc" indicator-dots="{{indicatorDots}}" indicator-color="{{indicatorColor}}" indicator-active-color="{{indicatorActiveColor}}" autoplay="{{autoplay}}" circular="{{circular}}" vertical="{{vertical}}"
+        interval="{{interval}}" duration="{{duration}}" previous-margin="{{previousMargin}}px" next-margin="{{nextMargin}}px">
+        <swiper-item>
+          <view class="swiper-item">
+            <view class="tn">
+              <view class="ccbe fz24">今日订单金额（元）</view>
+              <view class="tw fz93 cfff">{{topdata.salesAmount}}</view>
+            </view>
+            <view class="flex tt ccbe fz26">
+              <view>今日订单数<text>{{topdata.orderCount||0}}</text></view>
+              <view>下单客户数<text>{{topdata.shopCount||0}}</text></view>
+              <view>动销率<text>{{topdata.pin}}%</text></view>
+            </view>
+          </view>
+        </swiper-item>
+        <swiper-item>
+          <view class="swiper-item">
+            <view class="tn">
+              <view class="ccbe fz24">今日客单价（元）</view>
+              <view class="tw fz93 cfff">{{topdata.unitPrice}}</view>
+            </view>
+            <view class="flex tt ccbe fz26">
+              <view>月平均客单价（元）<text>{{topdata.averageUnitPrice}}</text></view>
+              <view>退货金额（元）<text>{{topdata.backAmount}}</text></view>
+            </view>
+          </view>
+        </swiper-item>
+      </swiper>
+    </view>
+    <!-- <image class="topb" src="../images/home/topb.png"></image> -->
+    <view class="pflt flex tc fz24 c7B7">
+      <view @tap="seeclick('trial')">
+        <view>
+          <view class="postir" hidden="{{!topdata.approveCount}}">{{topdata.approveCount}}</view>
+          <image style="width:81rpx;height:81rpx;" src="../images/home/p1.png"></image>
+        </view>
+        <text>待我审批</text>
+      </view>
+      <view @tap="seeclick('fun/taskManage')">
+        <view><image style="width:81rpx;height:81rpx;" src="../images/home/p2.png"></image></view>
+        <text>门店任务</text>
+      </view>
+      <view @tap="seeclick('fun/salesOrder')">
+        <view><image style="width:81rpx;height:81rpx;" src="../images/home/p3.png"></image></view>
+        <text>销售订单</text>
+      </view>
+      <view @tap="seeclick('fun/shopInfo')">
+        <view><image style="width:81rpx;height:81rpx;" src="../images/home/p4.png"></image></view>
+        <text>门店通</text>
+      </view>
+    </view>
+  </view>
+  <view class="bcfff" hidden="{{!isHome}}">
+    <view style="padding:30rpx 28rpx;">
+      <text class="c444 fz28">营收趋势统计</text>
+      <view class="flex fz20 right cb9b choose">
+        <view @tap="tabClick(0)" class="{{activeIndex==0?'c444 bcf3f':''}}" style="border-right:1px solid #E5E5E5">订单金额</view>
+        <view @tap="tabClick(1)" class="{{activeIndex==1?'c444 bcf3f':''}}">订单量</view>
+      </view>
+    </view>
+    <view>
+      <view class="tab_content">
+        <view style="padding:0rpx 25rpx;">
+          <text class="fz24 c7B7" hidden="{{activeIndex != 0}}">订单总额：{{lineData[4][0]||0}}元</text>
+          <text class="fz24 c7B7" hidden="{{activeIndex != 1}}">订单量：{{lineData[4][1]||0}}笔</text>
+          <view class="right">
+            <picker class="jTime c444 fz24 inline-block bcf3f" bindchange="bindPickerChange" value="{{areaIndexOne}}" range="{{area}}" id='1'>
+              <view class="picker">{{area[areaIndexOne]}}</view>
+              <view class="picker" hidden="{{areaIndexOne != '-1'}}">自定义</view>
+            </picker>
+            <view class="rightTime inline-block c7B7 fz24" @tap="setDataOne">{{startDateOne+'~'+endDateOne}}<image src="../images/home/dow.png"></image></view>
+          </view>
+        </view>
+        <view style="height:{{canvasHeight}}px;" hidden="{{imageHidden}}">
+          <canvas hidden="{{isdataOne}}" style="width:100%;height:{{canvasHeight}}px;margin-top:20rpx;" canvas-id="lineCanvas" class="canvas" bindtouchend="touchEndHandler"></canvas>
+        </view>
+        <!-- disable-scroll="true" bindtouchstart="touchHandler" bindtouchmove="moveHandler" -->
+      </view>
+    </view>
+  </view>
+  <calendarOne wx:if="{{isdataOne}}" :startDate.sync="startDateOne" :endDate.sync="endDateOne"></calendarOne>
+  <!-- <view class="loading" hidden="{{isHome}}"></view> -->
+  <view class="prompt" wx:if="{{imageHidden}}" @tap="know">
+    <image src="../images/pic.png" style="height:{{promptImgHeight}}px" @load="imageLoad"/>
+  </view>
+</template>
+<script>
+import wepy from 'wepy';
+import api from '../utils/api';
+import calendar from '../components/common/calendar';
+import util,{allColor} from '../utils/util';
+import tip from '../utils/tip';
+import wxCharts from '../utils/wxcharts.js';
+
+export default class home extends wepy.page {
+  config = {
+    "navigationBarTitleText": "小程序",
+    enablePullDownRefresh : true,
+    navigationBarBackgroundColor: '#15b0b7',
+    backgroundColorTop: '#15b0b7',
+  }
+  data = {
+    isHome:false,
+    indicatorDots: true,//指示点
+    indicatorColor: '#CBEFE2',
+    indicatorActiveColor: '#FFFFFF',
+    vertical: false,//
+    autoplay: false,//播放
+    circular: true,
+    interval: 2000,
+    duration: 500,
+    previousMargin: 0,
+    nextMargin: 0,
+    topdata:{},
+
+    isdataOne: false,
+    // isdataTwo: false,
+    startDateOne:util.currentWeek().start,
+    endDateOne:util.currentWeek().end,
+    // startDateTwo:'2018-2-8',
+    // endDateTwo:'2018-5-10',
+    areaIndexOne:1,
+    // areaIndexTwo:-1,
+    // area:['今日','本周','本月','上周','上月','本年'/*,'近一年'*/],
+    area:['今日','本周','上周','本月','上月','本年'],
+    // date: '2018-05-10',
+    // tabs: ["订单金额", "收款金额", "订单量"],
+    activeIndex: 0,
+    // sliderOffset: 0,
+    // sliderLeft: 0,
+
+    windowWidth:wepy.getSystemInfoSync().windowWidth,
+    canvasHeight:180,
+    lineChart:null,
+    lineData:null,
+    promptImgHeight:0,
+    imageHidden:false,
+  }
+  components = {
+    calendarOne: calendar,
+    // calendarTwo: calendar
+  }
+  methods = {
+    seeclick(url){
+      if(url){
+        this.$navigate(url);
+      }else{
+        tip.alert('暂未开放');
+      }
+    },
+    setDataOne(){
+      // this.activeIndex = 1;
+      this.isdataOne = true;
+      this.$broadcast('some-event');
+    },
+    // setDataTwo(){
+    //   this.activeIndex = 1;
+    //   this.isdataTwo = true;
+    // },
+    bindPickerChange(e){
+      this.setAreaFun(e.detail.value,e.target.id);
+    },
+    // bindDateChange (e) {
+    //   this.date = e.detail.value;
+    // },
+    tabClick (id) {
+      // this.sliderOffset = e.currentTarget.offsetLeft;
+      // this.activeIndex = e.currentTarget.id;
+      this.activeIndex = id;
+      this.initCharts();
+    },
+    // touchHandler (e) {
+    //     this.lineChart.scrollStart(e);
+    // },
+    // moveHandler (e) {
+    //     this.lineChart.scroll(e);
+    // },
+    touchEndHandler (e) {
+      this.lineChart.scrollEnd(e);
+      this.lineChart.showToolTip(e, {
+        format:(item, category)=> {
+          return category + ' ' + item.name + ':' + item.data
+        }
+      });
+    },
+    imageLoad(e){
+      // wx.onCompassChange(function (res) {
+      //   console.log(res.direction);
+      // })
+      const {width,height} = e.detail;
+      const {windowWidth,windowHeight} = wepy.getSystemInfoSync();
+      this.promptImgHeight = (windowWidth/width*height).toFixed(2);
+      console.log(this.promptImgHeight);
+      wepy.vibrateLong();
+    },
+    know(){
+      this.imageHidden = false;
+      wepy.showTabBar();
+      wepy.setStorageSync('prompt','true');
+    }
+  }
+  /*
+   **公用方法**
+   */
+   setAreaFun = (index,id)=>{
+     let myDate = new Date();
+     this.areaIndexOne = index;
+     if(index == 0){//今天
+       let today = myDate.getFullYear()+'-'+(myDate.getMonth()+1)+'-'+myDate.getDate();
+       this.startDateOne = today;
+       this.endDateOne = today;
+     }else if(index == 1){//本周
+       this.startDateOne = util.currentWeek().start;
+       this.endDateOne = util.currentWeek().end;
+     }else if(index == 2){//上周
+       this.startDateOne = util.getLastWeekDate().start;
+       this.endDateOne = util.getLastWeekDate().end;
+     }else if(index == 3){//本月
+       this.startDateOne = util.getCurrentMonthLast().start;
+       this.endDateOne = util.getCurrentMonthLast().end;
+     }else if(index == 4){//上月
+       this.startDateOne = util.getonMonth().start;
+       this.endDateOne = util.getonMonth().end;
+     }else if(index == 5){//本年
+       this.startDateOne = myDate.getFullYear()+'-1-1';
+       this.endDateOne = myDate.getFullYear()+'-'+(myDate.getMonth()+1)+'-'+myDate.getDate();
+       console.log('本年');
+     }
+     /*else if(index == 3){
+       this.startDateOne = new Date().getFullYear()+'-01-01';
+     }*/
+     this.getOrderReport();//index == 5?2:1
+   }
+  onPullDownRefresh() {
+    if(this.isdataOne == false){
+      let that = this;
+      // wepy.showNavigationBarLoading();
+      that.onLoad(()=>{
+        that.getData = '下拉刷新成功'
+        wepy.stopPullDownRefresh();
+        // wepy.hideNavigationBarLoading();
+      });
+    }else{
+      wepy.stopPullDownRefresh();
+      // wepy.hideNavigationBarLoading();
+    }
+  }
+  events = {
+    'date-event': (startDate,endDate) => {
+      if(startDate != false){
+        this.startDateOne = startDate;
+        this.endDateOne = endDate;
+        this.areaIndexOne = -1;
+        this.getOrderReport();
+      }
+      this.isdataOne = false;
+    }
+  }
+  onReachBottom () {
+  }
+  // watch = {
+  //   startDateOne(newVal, oldVal){
+  //     // console.log('变动',newVal, oldVal);
+  //   }
+  // }
+  onReady(){
+  }
+  onShow(){
+  }
+  onHide() {
+    this.isdataOne = false;
+  }
+  onShareAppMessage(res) {
+    return {
+      title: '用数据管理你的生意',
+      path: 'pages/home',
+      imageUrl: '../images/turn.jpg'
+    }
+  }
+  onLoad(backFun) {
+    let that = this;
+    // wepy.setTabBarBadge({
+    //   index: 2,
+    //   text: '1'
+    // });
+    api.getLiteIndex((data)=>{
+      that.isHome = true;
+      that.topdata = data.data;
+      that.topdata.salesAmount = that.topdata.salesAmount.toFixed(2);
+      that.topdata.unitPrice = that.topdata.unitPrice.toFixed(2);
+      that.topdata.pin = that.topdata.pin.toFixed(2);
+      that.topdata.averageUnitPrice = that.topdata.averageUnitPrice.toFixed(2);
+      that.topdata.backAmount = that.topdata.backAmount.toFixed(2);
+      if(typeof backFun == 'function'){
+        backFun();
+      }
+      that.$apply();
+    });
+    that.getOrderReport();
+    wepy.showShareMenu();
+    if(!wepy.getStorageSync('prompt')){
+      this.imageHidden = true;
+      wepy.hideTabBar();
+    }
+  }
+  getOrderReport(){
+    let that = this;
+    api.getOrderReport({
+      query:{
+        dateType:this.areaIndexOne == 5?2:1,//type||1,//处年为2
+        startDate:that.startDateOne,
+        endDate:that.endDateOne
+      }
+    },(data)=>{
+      for(let i=0; i<data.data[0].length; i++){
+        data.data[0][i] = data.data[0][i].substring(5,data.data[0][i].length);
+      }
+      for(let i=0; i<data.data[2].length; i++){
+        data.data[2][i] = data.data[2][i].substring(5,data.data[2][i].length);
+      }
+      that.lineData = data.data;
+      that.initCharts();
+      that.$apply();
+    });
+  }
+  initCharts(){
+    let that = this;
+    let categorieslist;
+    let datalist;
+    if(this.activeIndex==0){
+      categorieslist = this.lineData[0];
+      datalist = this.lineData[1];
+    }else{
+      categorieslist = this.lineData[2];
+      datalist = this.lineData[3]
+    }
+    if(this.areaIndexOne == 1 || this.areaIndexOne == 2){
+      categorieslist = ['周一','周二','周三','周四','周五','周六','周日'];
+    }else if(this.areaIndexOne == 5){
+      categorieslist = ['一月','二月','三月','四月','五月','六月','七月','八月','九月','十月','十一月','十二月'];
+    }
+    // console.log(this.activeIndex,this.lineData);
+    this.lineChart = new wxCharts({
+      canvasId: 'lineCanvas',
+      type: 'line',//line area
+      categories: categorieslist,
+      animation: false,
+      series: [{
+        name: '',
+        color:allColor[0],
+        defaultColor:'#F00',
+        data: datalist,
+        format (val, name) {
+          return val+(that.activeIndex==0?'元':'笔');
+        },
+      }],
+      xAxis: {
+        fontColor: '#B9B9C1',
+        disableGrid: true,
+      },
+      yAxis: {
+        min: 0,
+        fontColor: "#CCCCCC",
+        gridColor:"#F5F5F5",
+        // format (val, name) {
+        //   return (val/10000).toFixed(2);
+        // },
+      },
+      width: this.windowWidth,
+      height: this.canvasHeight,
+      dataLabel: false,// 是否在图表中显示数据内容值
+      legend: false, // 是否显示图表下方各类别的标识
+      dataPointShape: false,// 是否在图表中显示数据点图形标识
+      enableScroll: false,// 是否开启图表可拖拽滚动
+      extra: {
+        lineStyle: 'curve',
+      }
+    });
+  }
+}
+</script>

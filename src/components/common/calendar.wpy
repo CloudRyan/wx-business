@@ -1,0 +1,256 @@
+<style lang="less">
+.canvas {
+  z-index: 0;
+}
+.container-calendar {
+  position:fixed;
+  top:0px;
+  left:0px;
+  right:0px;
+  bottom:0px;
+  background: rgba(0,0,0,0.4);
+}
+.calendar {
+  height:210px;
+  position: fixed;
+  left:0px;
+  right:0px;
+  bottom:0px;
+  background-color: #FFFFFF;
+}
+.date {
+  font-size: 26rpx;
+  display: flex;
+  justify-content: space-between;
+  // display: flex;
+  // flex-direction: row;
+  picker-view {
+    width: 50%;
+    height: 150px;
+  }
+}
+.dateTime {
+  font-size: 30rpx;
+  height: 80rpx;
+  line-height: 80rpx;
+  border-top:1rpx solid #DDD;
+  border-bottom:1rpx solid #F8F8F8;
+  margin-bottom:20rpx;
+  .cancel {
+    width: 100rpx;
+    height: 80rpx;
+    color:#888888;
+    text-align: center;
+    float: left;
+  }
+  .confirm {
+    width: 100rpx;
+    height: 80rpx;
+    color: #1aad19;//#029be5;
+    text-align: center;
+    float: right;
+  }
+}
+.errAlt {
+  position: absolute;
+  bottom:600rpx;
+  left:0rpx;
+  right:0rpx;
+  text-align:center;
+}
+.errAlt>view {
+  padding: 5rpx 10rpx;
+  font-size: 24rpx;
+  border-radius: 5rpx;
+  display:inline-block;
+  background-color: #FFFFFF;
+}
+</style>
+<template>
+  <view class="container-calendar" style="z-index:9999" @tap.stop="stopCal">
+    <view class="errAlt" wx:if="{{errAlt}}"><view>{{errAlt}}</view></view>
+    <view class="calendar">
+      <view class="dateTime">
+        <view @tap="cancel" class="cancel">取消</view>
+        <view @tap="confirm" class="confirm">确定</view>
+      </view>
+      <view class="date">
+        <picker-view indicator-style="height: 50px;" value="{{valueOne}}" @change="bindChangeOne">
+          <picker-view-column>
+            <repeat for="{{yearsOne}}" key="index" index="index" item="item">
+                <view style="line-height: 50px; text-align: right">{{item}}年</view>
+            </repeat>
+          </picker-view-column>
+          <picker-view-column>
+            <repeat for="{{monthsOne}}" key="index" index="index" item="item">
+                <view style="line-height: 50px;text-indent:35rpx;">{{item}}月</view>
+            </repeat>
+          </picker-view-column>
+          <picker-view-column>
+            <repeat for="{{daysOne}}" key="index" index="index" item="item">
+                <view style="line-height: 50px">{{item}}日</view>
+            </repeat>
+          </picker-view-column>
+        </picker-view>
+        <picker-view indicator-style="height: 50px;" value="{{valueTwo}}" @change="bindChangeTwo">
+          <picker-view-column>
+            <repeat for="{{yearsTwo}}" key="index" index="index" item="item">
+                <view style="line-height: 50px;text-align: right">{{item}}年</view>
+            </repeat>
+          </picker-view-column>
+          <picker-view-column>
+            <repeat for="{{monthsTwo}}" key="index" index="index" item="item">
+                <view style="line-height: 50px;text-indent:35rpx;">{{item}}月</view>
+            </repeat>
+          </picker-view-column>
+          <picker-view-column>
+            <repeat for="{{daysTwo}}" key="index" index="index" item="item">
+                <view style="line-height: 50px">{{item}}日</view>
+            </repeat>
+          </picker-view-column>
+        </picker-view>
+      </view>
+    </view>
+  </view>
+</template>
+<script>
+import wepy from 'wepy';
+import tip from '../../utils/tip';
+import util from '../../utils/util';
+const date = new Date()
+// const minYear = date.getFullYear()-30;
+// const maxYear = date.getFullYear()+30;
+// const yearsOne = []
+// const monthsOne = []
+// const daysOne = []
+// const yearsTwo = []
+// const monthsTwo = []
+// const daysTwo = []
+export default class calender extends wepy.component {
+  data = {
+    errAlt : '',
+    minYear : date.getFullYear()-10,
+    maxYear : date.getFullYear()+10,
+    yearsOne : [],
+    monthsOne : [],
+    daysOne : [],
+    yearsTwo : [],
+    monthsTwo : [],
+    daysTwo : [],
+
+    // yearsOne: yearsOne,
+    // monthsOne: monthsOne,
+    // daysOne: daysOne,
+    valueOne: [],
+    yearOne: Number,
+    monthOne: Number,
+    dayOne: Number,
+    // yearsTwo: yearsTwo,
+    // monthsTwo: monthsTwo,
+    // daysTwo: daysTwo,
+    valueTwo: [],
+    yearTwo: Number,
+    monthTwo: Number,
+    dayTwo: Number
+  }
+  props = {
+    // 静态传值
+    title: String,
+    startDate: String,
+    endDate: String
+  }
+  methods = {
+    stopCal (){
+      console.log(3333);
+    },
+    bindChangeOne (e) {//开始时间
+      const val = e.detail.value;
+      this.yearOne = this.data.yearsOne[val[0]];
+      this.monthOne = this.data.monthsOne[val[1]];
+      this.dayOne = this.data.daysOne[val[2]];
+      this.cavdaysFun();
+    },
+    bindChangeTwo (e){//结束时间
+      const val = e.detail.value;
+      this.yearTwo = this.data.yearsTwo[val[0]];
+      this.monthTwo = this.data.monthsTwo[val[1]];
+      this.dayTwo = this.data.daysTwo[val[2]];
+      this.cavdaysFun();
+    },
+    cancel(){//取消
+      this.$emit('date-event',false);
+      wepy.showTabBar();
+    },
+    confirm(){//确定
+      if(!this.errAlt){
+        this.startDate = this.yearOne+'-'+this.monthOne+'-'+this.dayOne;
+        this.endDate = this.yearTwo+'-'+this.monthTwo+'-'+this.dayTwo;
+
+        this.valueOne = [this.yearOne-this.minYear, this.monthOne-1, this.dayOne-1];
+        this.valueTwo = [this.yearTwo-this.minYear, this.monthTwo-1, this.dayTwo-1];
+
+        this.$emit('date-event',this.startDate,this.endDate);
+        wepy.showTabBar();
+      }else{
+        tip.alert("请重新选择");
+      }
+    }
+  }
+  //公用方法
+  cavdaysFun(){
+    this.daysOne = [];
+    this.daysTwo = [];
+    let mOne = [31,util.isYear(this.yearOne)?29:28,31,30,31,30,31,31,30,31,30,31];
+    let mTwo = [31,util.isYear(this.yearTwo)?29:28,31,30,31,30,31,31,30,31,30,31];
+    for (let i = 1; i <= mOne[this.monthOne-1]; i++) {
+      this.daysOne.push(i)
+    }
+    for (let i = 1; i <= mTwo[this.monthTwo-1]; i++) {
+      this.daysTwo.push(i)
+    }
+    if(new Date(this.yearOne+'-'+this.monthOne+'-'+this.dayOne) >= new Date(this.yearTwo+'-'+this.monthTwo+'-'+this.dayTwo)){
+      this.errAlt = "开始时间不能大于结束时间！";
+    }else if(util.intervalTime(this.yearOne+'-'+this.monthOne+'-'+this.dayOne,this.yearTwo+'-'+this.monthTwo+'-'+this.dayTwo)){
+      this.errAlt = "时间区间不能大于90天！";
+    }else{
+      this.errAlt = "";
+    }
+    this.$apply();
+  }
+
+  events = {
+    //父传
+    'some-event': () => {
+      this.init();
+    }
+  }
+  init () {
+    wepy.hideTabBar();
+    let dateOne = util.iosDate(this.startDate);
+    this.yearOne = dateOne.getFullYear();
+    this.monthOne = dateOne.getMonth()+1;
+    this.dayOne = dateOne.getDate();
+
+    let dateTwo = util.iosDate(this.endDate);
+    this.yearTwo = dateTwo.getFullYear();
+    this.monthTwo = dateTwo.getMonth()+1;
+    this.dayTwo = dateTwo.getDate();
+
+    for (let i = this.minYear; i <= this.maxYear; i++) {
+      this.yearsOne.push(i)
+      this.yearsTwo.push(i)
+    }
+
+    for (let i = 1; i <= 12; i++) {
+      this.monthsOne.push(i)
+      this.monthsTwo.push(i)
+    }
+
+    this.cavdaysFun();
+
+    this.valueOne = [this.yearOne-this.minYear, this.monthOne-1, this.dayOne-1];
+    this.valueTwo = [this.yearTwo-this.minYear, this.monthTwo-1, this.dayTwo-1];
+    this.errAlt = '';//清楚提示
+  }
+}
+</script>

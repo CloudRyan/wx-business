@@ -1,0 +1,325 @@
+<style lang="less">
+page{
+  background-color: #16B4BA;
+}
+.loginBackimg {
+  position: fixed;
+  width:100%;
+  bottom:0rpx;
+  z-index: -1;
+}
+// .loginPage {
+//   position: fixed;
+//   top: 0rpx;
+//   left: 0rpx;
+//   right: 0rpx;
+//   bottom: 0rpx;
+// }
+.logo {
+  // width:190rpx;
+  // height:190rpx;
+  // border-radius: 50%;
+  text-align: center;
+  margin:5% auto 20% auto;
+  // box-shadow: 0px 0px 30rpx #3CC391;
+}
+.logo image {
+  width:97px;
+  height:52px;
+  margin-top:63rpx;
+}
+.userInfo {
+  margin-top:250rpx;
+  padding:0rpx 50rpx;
+}
+.userInfo button {
+  height:87rpx;
+  line-height: 87rpx;
+}
+.inputInfo {
+  // padding:50rpx 0rpx 30rpx 0rpx;
+  // border-bottom:1rpx solid #BCFCFE;
+  margin-bottom:200rpx;
+}
+.inputInfo .img {
+  margin-left: 20rpx;
+  margin-top:30rpx;
+}
+.inputInfo input {
+  width:81%;
+  color:#FFFFFF;
+  padding:20rpx 0rpx 20rpx 30rpx;
+  margin-right: 10%;
+  position: absolute;
+  margin-top:-90rpx;
+}
+.inputInfo .close {
+  width: 92rpx;
+  height: 92rpx;
+  display:inline-block;
+  position: absolute;
+  right:0rpx;
+  margin-top:-92rpx;
+  text-align: center;
+  z-index: 1;
+}
+.inputInfo .close image{
+  width:44rpx;
+  height:44rpx;
+  margin-top:25rpx;
+}
+.inputInfo .bottom_b {
+  width:100%;
+  border-bottom:1rpx solid #BCFCFE;
+  opacity: 0.8;
+}
+.other-button-hover {
+  background-color: #f0f0f0;
+  // background-color: #33a67b;
+}
+.inputTitle {
+  color: #FFFFFF;
+  width:100%;
+  line-height: 100rpx;
+  text-indent: 20rpx;
+  position: absolute;
+  margin-top:-46px;
+  animation: out-userAtm 0.3s forwards;
+}
+.inBottom1 {
+  opacity: 0;
+  animation: in-charlie .65s ease-out forwards 0.85s
+}
+.inBottom2 {
+  opacity: 0;
+  animation: in-charlie .65s ease-out forwards 1s
+}
+.inBottom3 {
+  border-radius: 40rpx;
+  opacity: 0;
+  animation: in-charlie .65s ease-out forwards 1.15s
+}
+@keyframes in-charlie {
+    0% {
+        opacity: 0;
+        transform: translate3d(0,150px,0)
+    }
+
+    100% {
+        opacity: 1;
+        transform: translate3d(0,0,0)
+    }
+}
+
+.topLogo {
+    opacity: 0;
+    animation: in-top 0.5s ease-out forwards 0.3s
+}
+@keyframes in-top {
+    0% {
+        opacity: 0;
+        // box-shadow: 0px 0px 0rpx #3CC391;
+        transform: translate3d(0,-150px,0)
+    }
+		// 10% {
+    //     opacity: 0.4;
+    //     box-shadow: 0px 0px 0rpx #3CC391;
+    //     transform: translate3d(0,0,0)
+    // }
+    // 80% {
+    //     box-shadow: 0px 0px 0rpx #3CC391;
+    //     opacity: 1;
+    // }
+    100% {
+        // box-shadow: 0px 0px 30rpx #3CC391;
+        opacity: 1;
+    }
+}
+.userAtm {
+  animation: in-userAtm 0.3s forwards;
+}
+@keyframes in-userAtm {
+  0% {
+    transform: translate3d(0,0,0)
+  }
+  100% {
+    transform: translate3d(0,-70rpx,0)
+  }
+}
+@keyframes out-userAtm {
+  0% {
+    transform: translate3d(0,-70rpx,0)
+  }
+  100% {
+    transform: translate3d(0,0,0)
+  }
+}
+
+// .inputTitle {
+//   background-color: #666;
+// }
+// .inputInfo input {
+//   background: #F00;
+// }
+// .inputInfo .close {
+//   background-color: #f67;
+// }
+</style>
+<template>
+  <image class="loginBackimg" src="../images/loginBackimg.jpg"></image>
+  <!-- <view class="loginPage" style="background-image: url(../images/loginBackimg.jpg);background-position: bottom; background-repeat: no-repeat;background-size: 100% auto;"> -->
+  <!-- <view class="loading"></view> -->
+  <view class="logo bc3CC topLogo">
+    <image src="../images/logo.png"></image>
+  </view>
+  <view class="userInfo fz28 c444">
+    <view class="inputInfo flex inBottom1">
+      <!-- <image src="../images/name.png" class="img" style="width:34rpx;height:36rpx;"></image> -->
+      <view class="inputTitle fz32 {{userAtm==true?'userAtm':''}}" @tap="inputTitleClick('user')">用户名</view>
+      <input maxlength="32" confirm-type="next" placeholder="" value="{{userName}}" placeholder-style="color:#FFFFFF" hidden="{{!userAtmInput}}" @tap="inputClick('user')" focus="{{userfocus}}" @blur="blur('user')" @input="userIt({{event}})" @confirm="nextInput" confirm-hold="true"/>
+      <view  class="close" wx:if="{{userName}}" @tap.stop="close('userName')"><image src="../images/inputClose.png"></image></view>
+      <view class="bottom_b"></view>
+    </view>
+    <view class="inputInfo flex inBottom2">
+      <!-- <image src="../images/password.png" class="img" style="width:31rpx;height:36rpx;"></image> -->
+      <view class="inputTitle fz32 {{pwdAtm==true?'userAtm':''}}" @tap="inputTitleClick('pwd')">密码</view>
+      <input password maxlength="32" placeholder="" value="{{userPwd}}" placeholder-style="color:#FFFFFF" hidden="{{!pwdAtmInput}}" @tap="inputClick('pwd')" focus="{{pwdfocus}}" @blur="blur('pwd')" @input="pwdIt({{event}})" @confirm="login"/>
+      <view class="close" wx:if="{{userPwd}}" @tap.stop="close('userPwd')"><image src="../images/inputClose.png"></image></view>
+      <view class="bottom_b"></view>
+    </view>
+    <button loading="{{loading}}" open-type="getUserInfo" @tap="login" class="c3CC fz28 inBottom3" hover-class="other-button-hover">登录</button>
+  </view>
+</template>
+<script>
+import wepy from 'wepy';
+import tip from '../utils/tip';
+import api from '../utils/api';
+
+export default class login extends wepy.page {
+  data = {
+    token:wepy.getStorageSync('token'),
+    userName:'',
+    userPwd:'',
+    userfocus:false,
+    pwdfocus:false,
+    loading: false,
+    userAtm:false,
+    userAtmInput:false,
+    pwdAtm:false,
+    pwdAtmInput:false,
+  }
+  components = {
+  }
+  methods = {
+    userIt(e){
+      this.userName = e.detail.value;
+    },
+    pwdIt(e){
+      this.userPwd = e.detail.value;
+    },
+    nextInput(e){
+      this.userfocus = false;
+      // this.pwdfocus = true;
+      this.pwdAtm = true;
+      this.pwdAtmInput = true;
+      setTimeout(()=>{
+        this.pwdfocus = true;
+        this.$apply();
+      },300);
+    },
+    blur(ufs){
+      if(ufs == 'user'){
+        if(!this.userName){
+          this.userAtm = false;
+          this.userAtmInput = false;
+        }
+        this.userfocus = false;
+      }else{
+        if(!this.userPwd){
+          this.pwdAtm = false;
+          this.pwdAtmInput = false;
+        }
+        this.pwdfocus = false;
+      }
+    },
+    login(){
+      if(!this.userName){
+        tip.alert('用户名不能为空');
+      }else if(!this.userPwd){
+        tip.alert('密码不能为空');
+      }else{
+        api.liteLogin({
+          query: {
+            loginName: this.userName,
+            password: this.userPwd,
+          }
+        },data=>{
+          wepy.switchTab({
+            url: 'home'
+          })
+        });
+      }
+    },
+    close(val){
+      if(val == 'userName'){
+        this.userName = '';
+        this.userAtm = false;
+        this.userAtmInput = false;
+        this.userfocus = false;
+      }else {
+        this.userPwd = '';
+        this.pwdAtm = false;
+        this.pwdAtmInput = false;
+        this.pwdfocus = false;
+      }
+    },
+    inputTitleClick(uname){
+      if(uname == 'user' && !this.userAtm){
+        this.userAtm = true;
+        this.userAtmInput = true;
+        setTimeout(()=>{
+          this.userfocus = true;
+          this.$apply();
+        },300);
+      }else if(uname == 'pwd' && !this.pwdAtm){
+        this.pwdAtm = true;
+        this.pwdAtmInput = true;
+        setTimeout(()=>{
+          this.pwdfocus = true;
+          this.$apply();
+        },300);
+      }
+    },
+    inputClick(uname){
+      // if(uname == 'pwd' && !this.userName){
+      //   this.userAtm = false;
+      //   this.userAtmInput = false;
+      //   this.userfocus = false;
+      // }else if(uname == 'user' && !this.userPwd){
+      //   this.pwdAtm = false;
+      //   this.pwdAtmInput = false;
+      //   this.pwdfocus = false;
+      // }
+    }
+  }
+  events = {
+  }
+  onLoad(e) {
+    if(e.page){
+      wepy.clearStorageSync();
+      wepy.showShareMenu();
+    }else if(this.token){
+      wepy.switchTab({
+        url: 'home'
+      })
+    }
+  }
+  onShareAppMessage(res) {
+    return {
+      title: '用数据管理你的生意',
+      path: 'pages/home',
+      imageUrl: '../images/turn.jpg'
+    }
+  }
+}
+</script>

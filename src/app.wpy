@@ -1,0 +1,115 @@
+<style lang="less">
+@import 'styles/base.less';
+</style>
+<script>
+import wepy from 'wepy'
+import 'wepy-async-function'
+
+export default class extends wepy.app {
+  config = {
+    'ext': {
+      'version':'v2.0'
+    },
+    //设置页面路径
+    pages: [
+      // 'pages/oper/warehouseAnalysis',
+      'pages/login',//登录
+      'pages/home',//首页
+      'pages/statistics',//运营
+      'pages/own',//我的
+      'pages/personal',
+      'pages/trial',
+      'pages/trialDetails',
+      'pages/about',
+      'pages/oper/salesAnalysis',
+      'pages/oper/customerAnalysis',
+      'pages/oper/orderAnalysis',
+      'pages/oper/warehouseAnalysis',
+      // 'pages/oper/storageManage',
+      'pages/oper/warning',//库存预警
+      'pages/oper/returnOrder',//退换货订单
+      'pages/oper/returnOrderDetails',//退换货订单详情
+      'pages/oper/andOutManage',//出库入库管理
+      'pages/oper/andOutManageDetails',//出库管理详情
+      'pages/oper/andInManageDetails',//入库管理详情
+      'pages/oper/inventoryQuery',//库存查询
+      'pages/oper/inventoryQueryResults',//库存查询结果
+      'pages/oper/inventoryQueryDetails',//库存查询结果详情
+      'pages/fun/taskManage',//销售任务
+      'pages/fun/salesOrder',//销售订单
+      'pages/fun/shopInfo',//门店通
+      'pages/fun/taskManageDetails',//销售任务详情
+      'pages/fun/salesOrderDetails',//销售订单详情
+      'pages/fun/shopInfoDetails',//门店通详情
+    ],
+    //设置默认页面的窗口表现
+    window: {
+      navigationBarBackgroundColor: '#16B4BA',
+      navigationBarTitleText: '小程序',
+      navigationBarTextStyle: 'white',
+      enablePullDownRefresh: false,
+      backgroundTextStyle: 'dark',
+      backgroundColor: '#F3F4F7',
+      // backgroundColorTop: '#F3F4F7',
+      // backgroundColorBottom: '#F3F4F7'
+    },
+    //设置底部 tab 的表现
+    "tabBar": {
+      "color": "#b9b9c1",
+      "selectedColor": "#16B4BA",
+      "backgroundColor": "#FFFFFF",
+      "borderStyle": "black",
+      "list": [{
+        "pagePath": "pages/home",
+        "text": "首页",
+        "iconPath": "images/icon_home.png",
+        "selectedIconPath": "images/icon_home_active.png"
+      }, {
+        "pagePath": "pages/statistics",
+        "text": "运营",
+        "iconPath": "images/icon_classify.png",
+        "selectedIconPath": "images/icon_classify_active.png"
+      }, {
+        "pagePath": "pages/own",
+        "text": "我的",
+        "iconPath": "images/icon_info.png",
+        "selectedIconPath": "images/icon_info_active.png"
+      }]
+    },
+    //设置网络超时时间
+    "networkTimeout":{
+      "request": 10000,
+      "connectSocket": 10000,
+      "uploadFile": 10000,
+      "downloadFile": 10000
+    },
+    //设置是否开启 debug 模式
+    "debug": false
+  }
+
+  onLaunch() {
+    wepy.showShareMenu({
+      withShareTicket: true
+    });
+    // 登录
+    // wepy.login({
+    //   success: res => {
+    //     console.log('用户信息：' + JSON.stringify(res));
+    //     // 发送 res.code 到后台换取 openId, sessionKey, unionId
+    //   }
+    // })
+    // // 获取用户信息
+    // wepy.getSetting({
+    //   success: res => {
+    //     // if(res.authSetting['scope.userInfo']) {
+    //     //   wepy.getUserInfo({
+    //     //     success: res => {
+    //     //       wepy.userInfo = res.userInfo;
+    //     //     }
+    //     //   })
+    //     // }
+    //   }
+    // })
+  }
+}
+</script>

@@ -1,0 +1,175 @@
+<style lang="less">
+.infor {
+  padding:25rpx 28rpx 25rpx 28rpx;
+  margin-bottom:20rpx;
+}
+.posImg {
+  width:160rpx;
+  height:160rpx;
+  position: absolute;
+  right:20rpx;
+  top:20rpx;
+  z-index: 1;
+}
+.splist {
+  margin-top:20rpx;
+  border-right:1rpx solid #E5E5E5;
+  border-bottom:1rpx solid #E5E5E5;
+}
+.splist .trtitle view,
+.splist .trlist view{
+  width:25%;
+  border-top:1rpx solid #E5E5E5;
+  border-left:1rpx solid #E5E5E5;
+}
+.splist .trtitle{
+  height:60rpx;
+  line-height:60rpx;
+  background-color:#F9F9F9
+}
+.splist .trlist view{
+  padding: 10rpx;
+  display:flex;
+  display: -webkit-flex;
+  align-items:center;
+}
+.imglist {
+  display: flex;
+  white-space: nowrap;
+}
+.imglist view {
+  width: 155rpx;
+  height: 145rpx;
+  padding-right:10rpx;
+  display: inline-block
+}
+.imglist image{
+  width:100%;
+  height:100%
+}
+.ysime {
+  width:20rpx;
+  height:20rpx;
+  border-radius: 50%;
+  margin-right: 30rpx;
+}
+.ysime view {
+  height:43rpx;
+  width:2rpx;
+  background-color: #E5E5E5;
+  position: relative;
+  top:20rpx;
+  left:9rpx;
+}
+.ptbon {
+  height:150rpx;
+}
+.ptbon>view{
+  padding:20rpx 28rpx 40rpx 28rpx;
+  border-top:2rpx solid #E3E3E7;
+  position: fixed;
+  left:0rpx;
+  right:0rpx;
+  bottom:0rpx;
+}
+.ptbon button {
+  width:46%;
+  height: 70rpx;
+  line-height: 70rpx;
+  font-size: 24rpx;
+}
+.ptbon button[type="default"]{
+  background-color: #E5E5E5;
+}
+.ptbon button[type="primary"]{
+  background-color: #16B4BA;
+}
+.box {
+  display:inline-block;
+  position: relative;
+  left:50rpx;
+  margin-top:20rpx;
+  background-color: #E5E5E5;
+  padding:15rpx 20rpx;
+  border-radius: 10rpx;
+}
+.boxt {
+  width:0rpx;
+  height:0rpx;
+  border-top:10rpx solid rgba(0,0,0,0);
+  border-right:10rpx solid  rgba(0,0,0,0);
+  border-bottom:10rpx solid #E5E5E5;
+  border-left:10rpx solid  rgba(0,0,0,0);
+  position: absolute;
+  top:-20rpx;
+}
+</style>
+<template>
+  <view class="infor bcfff relative ove-h">
+    <view>
+      <view><text class="c7B7 fz24">入库单号：</text><text class="c444 fz26">{{trialInfo.no}}</text></view>
+      <view><text class="c7B7 fz24">入库总计：</text><text class="c444 fz26">共 {{jsonInfo.goodsQuantity}}件 {{jsonInfo.varietyQuantity}}种 商品</text></view>
+      <view><text class="c7B7 fz24">入库金额：</text><text class="c444 fz26">￥{{jsonInfo.totalAmount}}</text></view>
+      <view><text class="c7B7 fz24">入库仓库：</text><text class="c444 fz26">{{trialInfo.storageName}}</text></view>
+      <view><text class="c7B7 fz24">入库时间：</text><text class="c444 fz28">{{jsonInfo.gmtIn}}</text></view>
+      <view><text class="c7B7 fz24">备<text style="margin-left:48rpx;"></text>注：</text><text class="c444 fz28">{{trialInfo.remark}}</text></view>
+    </view>
+    <image class="posImg" src="../../images/oper/lib/etcAudit.png" wx:if="{{jsonInfo.status=='待审核'}}"></image>
+    <image class="posImg" src="../../images/oper/lib/etcShelves.png" wx:if="{{jsonInfo.status=='待上架'}}"></image>
+    <image class="posImg" src="../../images/oper/lib/alreadyShelves.png" wx:if="{{jsonInfo.status=='已上架'}}"></image>
+  </view>
+  <view class="infor bcfff">
+    <view class="c444 fz26">商品信息</view>
+    <view class="splist fz24 tc">
+      <view class="flex c7B7 trtitle"><view>商品名称</view><view>规格信息</view><view>入库数量</view><view>入库总金额</view></view>
+      <view class="flex c444 trlist" wx:for="{{trialInfo.stockIndetail}}" wx:for-item="items">
+        <view>{{items.goodsName}}</view>
+        <view>{{items.property}}</view>
+        <view>{{items.quantity}}</view>
+        <view>{{items.totalAmount}}</view>
+      </view>
+    </view>
+  </view>
+  <view class="infor bcfff" wx:if="{{trialInfo.stockInLogVos.length}}">
+    <view class="c444 fz28">入库流程</view>
+    <view class="fz24" style="margin-top:30rpx;" wx:for="{{trialInfo.stockInLogVos}}">
+      <view class="inline-block bc3CC ysime"><view wx:if="{{trialInfo.stockInLogVos.length-1 != index}}"></view></view>
+      <view class="inline-block c444">{{item.content}}</view>
+      <view class="inline-block c444" style="margin-left:20rpx;">{{item.createUsername}}</view>
+      <view class="inline-block cb9b right">{{item.createDate}}</view>
+    </view>
+  </view>
+</template>
+<script>
+import wepy from 'wepy';
+import api from '../../utils/api';
+import {scopeDate} from '../../utils/util';
+export default class andOutManageDetails extends wepy.page {
+  config = {
+    "navigationBarTitleText": "入库详情",
+  }
+  data = {
+    trialInfo:null,
+    jsonInfo:null,
+  }
+  components = {
+  }
+  methods = {
+  }
+  events = {
+  }
+  onLoad(option) {
+    let that = this;
+    this.jsonInfo = JSON.parse(option.data);console.log(this.jsonInfo);
+    api.getStockInDetail({
+      query: {
+        stockInId: this.jsonInfo.id,
+      }
+    },data=>{
+      data.data.stockInLogVos.map((items)=>items.createDate = scopeDate(items.createDate));
+      that.trialInfo = data.data;
+      that.$apply();
+    });
+  }
+}
+</script>

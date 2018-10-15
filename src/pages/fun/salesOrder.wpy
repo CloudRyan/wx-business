@@ -1,0 +1,223 @@
+<style lang="less">
+// @import '../../styles/style.less';
+.flexlist {
+  display: flex;
+  white-space: nowrap;
+}
+.flexlist .scroll-view {
+	padding: 25rpx 15rpx;
+	margin-right:30rpx;
+  display: inline-block;
+	text-align:center;
+	position: relative;
+}
+.flexlist .scroll-view:first-child {
+  margin-left:30rpx;
+}
+.filterBtn {
+  width:14%;
+  text-align:center;
+}
+.filterBtn>view {
+  height: 50%;
+  margin-top:20%;
+  border-left:2rpx solid #E5E5E5;
+}
+.filterBtn image {
+  width:29rpx;
+  height:31rpx;
+  margin-top: 7rpx;
+}
+.active-x {
+	// display: none;
+	height:5rpx;
+	width:100%;
+	background-color: #16B4BA;
+	position: absolute;
+	bottom:0rpx;
+	margin-left:-12rpx;
+}
+.orderList {
+	padding:30rpx;
+	margin-top: 20rpx;
+}
+.orderList .no {
+	padding:5rpx 10rpx;
+	border-radius: 5rpx;
+	margin-right: 20rpx;
+}
+.flexlist .bcFF6 {
+  width:50rpx;
+  height: 30rpx;
+  line-height: 30rpx;
+  border-radius: 16rpx;
+  position: absolute;
+  top:2rpx;
+  right:-15rpx;
+}
+</style>
+<template>
+  <search inputText="请输入门店名称搜索" :inputShowed.sync="inputShowed" :canvasHide.sync="canvasHide"/>
+  <!-- <search inputText="请输入门店门称搜索"/> -->
+	<view hidden="{{inputShowed}}">
+    <view class="flex bcfff">
+  		<view style="width:86%;">
+  			<scroll-view scroll-x="true" class="flexlist">
+  	      <view wx:for="{{statusList}}" class="scroll-view fz26 {{params.status==item.id?'c3CC':'c7B7'}}" @tap="choose({{item.id}})">
+  	      	{{item.name}}
+            <view class="bcFF6 cfff fz20" wx:if="{{item.alert}}">{{batchOrderCount || 0}}</view>
+  					<view class="active-x" hidden="{{params.status!=item.id}}"></view>
+  	      </view>
+  	    </scroll-view>
+  		</view>
+  		<view class="filterBtn" @tap="screening"><view><image src="../../images/fun/filter.png"></image></view></view>
+  	</view>
+  	<view class="bcfff orderList" wx:for="{{orderList}}" @tap="seeDetails({{item.orderId}})">
+  		<view>
+  			<view class="inline-block no cfff bcFFA fz24">{{item.shopCode}}</view>
+  			<view class="inline-block c343 fz28">{{item.shopName}}</view>
+  			<view class="right fz26 cFF6">￥{{item.oriTotalActual}}</view>
+  		</view>
+  		<view>
+  			<view class="inline-block fz26 c7B7">商品总计：</view>
+  			<view class="inline-block c343 fz26">共 {{item.goodsNum}}件 {{item.goodsKind}}种 商品</view>
+  			<view class="right fz26 {{item.statusTxt=='待发货'?'c3CC':'c444'}}">{{item.statusTxt}}</view>
+  		</view>
+  		<view>
+  			<view class="inline-block fz26 c7B7">优惠金额：</view>
+  			<view class="inline-block c343 fz26">￥{{item.totalDiscount}}</view>
+  		</view>
+  		<view>
+  			<view class="inline-block fz26 c7B7">业务人员：</view>
+  			<view class="inline-block c343 fz26">{{item.userName}}</view>
+  			<view class="time right c7B7 fz26">{{item.createTime}}</view>
+  		</view>
+  	</view>
+    <view class="cb9b fz20 tc">
+      <view wx-if="{{loadInfo==1}}">加载中...</view>
+      <view wx-if="{{loadInfo==2}}">—— 我是有底线的 ——</view>
+      <view wx-if="{{loadInfo==3}}" style="padding:50rpx 0rpx">—— 暂无数据 ——</view>
+    </view>
+    <screening :show.sync="canvasHide" :busId.sync="busId"/>
+  </view>
+</template>
+<script>
+import wepy from 'wepy';
+import api from '../../utils/api';
+import search from '../../components/common/search';
+import screening from '../../components/common/screening';
+export default class salesOrder extends wepy.page {
+  config = {
+    "navigationBarTitleText": "销售订单",
+		"onReachBottomDistance": 50
+  }
+  data = {
+    inputShowed:false,
+		statusList:[{name:'全部',id:0},/*{name:'待付款',id:1},{name:'支付中',id:2},*/
+    {name:'待发货',id:3,'alert':'batchOrderCount'},{name:'部分发货',id:4}
+		,{name:'待收货',id:5},{name:'交易完成',id:6},{name:'交易关闭',id:7}],
+
+    canvasHide:false,
+    params:{
+      pageNo:1,
+      pageSize:8,
+      status:0,
+      shopName:'',
+      userId:'',
+		},
+    orderList:[],
+    loadInfo:0,
+    busId:'',
+    batchOrderCount:0,
+  }
+	components = {
+    search,
+    screening
+  }
+  methods = {
+		choose(id){
+      this.params.pageNo = 1;
+      this.params.status = id;
+      this.getOrderList();
+      this.$apply();
+		},
+    seeDetails(orderId){
+      this.$navigate('salesOrderDetails?id='+orderId);
+    },
+    screening(){
+			this.canvasHide = true;
+		},
+  }
+  watch = {
+    "busId":(newVal,oldVal)=>{
+      if(newVal != oldVal){
+        this.params.pageNo = 1;
+        this.params.userId = newVal;
+        this.getOrderList();
+      }
+    }
+	}
+  events = {
+		'getSearch':(vals,backFun)=>{
+			api.getOrderList({
+				query:{
+          pageNo:1,
+          pageSize:100,
+          shopName:vals,
+				}
+			},data=>{
+        console.log(data);
+				backFun(data.data,'shopCode','orderNo','shopName','createTime');
+			});
+		},
+		'backSearch':data=>{
+			this.$navigate('salesOrderDetails?id='+data.orderId);
+		}
+	}
+  onReachBottom () {
+    let that = this;
+    if(that.loadInfo == 0){
+      that.params.pageNo++;
+      that.getOrderList(data=>{
+        that.orderList = that.orderList.concat(data);
+      });
+    }
+  }
+  getOrderList(backFun){
+    let that = this;
+    that.loadInfo = 1;
+    api.getOrderList({
+      query:this.params
+    },data=>{
+      if(data.data && data.data.length){
+        data.data = data.data.map((item)=>{
+          let mydate = new Date(item.createTime);
+          item.createTime = mydate.getFullYear()+'-'+(mydate.getMonth()+1)+'-'+mydate.getDate()+' '+(mydate.getHours()>9?mydate.getHours():'0'+mydate.getHours())+':'+(mydate.getMinutes()>9?mydate.getMinutes():'0'+mydate.getMinutes());
+          return item;
+        });
+      }
+
+      if(backFun){
+        backFun(data.data);
+      }else{
+        that.orderList = data.data;
+        if(!this.batchOrderCount && that.orderList && that.orderList.length>1){
+          this.batchOrderCount = that.orderList[0].batchOrderCount;
+        }
+      }
+      if(data.data.length == that.params.pageSize || that.params.pageNo == 1){
+        that.loadInfo = 0;
+        if(that.orderList.length == 0){
+          that.loadInfo = 3;
+        }
+      }else{
+        that.loadInfo = 2;
+      }
+      this.$apply();
+    });
+  }
+  async onLoad() {
+    this.getOrderList();
+  }
+}
+</script>

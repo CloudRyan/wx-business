@@ -1,0 +1,432 @@
+<style lang="less">
+@import '../../styles/style.less';
+.trtite {
+  width:80%;
+}
+.points .answer view {
+  bottom:auto;
+  top:-20rpx;
+  transform:rotate(180deg);
+}
+.points .answer image {
+  top:auto;
+  bottom: 15rpx;
+}
+.filterBtn {
+  width:20%;
+}
+.points>view {
+  width:33.33%;
+}
+.points1>view{
+  width:50%;
+}
+.choose {
+  height:50rpx;
+  border:1px solid #E5E5E5;
+  border-radius: 10rpx;
+  margin-right:20rpx;
+  margin-top:18rpx;
+}
+.choose view {
+  height:100%;
+  padding:0px 30rpx;
+  line-height: 50rpx;
+}
+</style>
+<template>
+  <view @tap="tooClickHide">
+    <view class="container bcfff flex c7B7 fz24 {{activeIndex!=5?'mb20':'mb1'}}">
+      <view class="trtite">
+        <view class="flex">
+          <view @tap.stop="seeclick({{$event}})" data-index="1" data-type="day" class="{{activeIndex==1&&'active'}}"><view>今日</view></view>
+          <view @tap.stop="seeclick({{$event}})" data-index="2" data-type="weeks" class="{{activeIndex==2&&'active'}}"><view>本周</view></view>
+          <view @tap.stop="seeclick({{$event}})" data-index="3" data-type="month" class="{{activeIndex==3&&'active'}}"><view>本月</view></view>
+          <view @tap.stop="seeclick({{$event}})" data-index="4" data-type="year" class="{{activeIndex==4&&'active'}}"><view>本年</view></view>
+          <view @tap.stop="seeclick({{$event}})" data-index="5" class="{{activeIndex==5&&'active'}}"><view style="padding-right:20rpx;border-right:1rpx solid #E5E5E5;">自定义</view></view>
+        </view>
+        <view class="active-x" animation="{{animation}}"></view>
+      </view>
+      <view class="filterBtn tc" @tap.stop="filterShow"><view class="h1ddd left" style="width:105rpx;">{{chs.name}}</view><image src="../../images/oper/toplo.png"></image></view>
+    </view>
+    <view class="indate mb20 bcfff flex fz24 c7B7" style="padding:20rpx;" hidden="{{activeIndex!=5}}">
+      <picker mode="date" value="{{startTime}}" data-name="start" end="{{endTime}}" @change="bindDateChange">
+        <view class="picker">{{startTime}}</view>
+      </picker>
+      <view class="indz">至</view>
+      <picker mode="date" value="{{endTime}}" data-name="end" start="{{startTime}}" @change="bindDateChange">
+        <view class="picker">{{endTime}}</view>
+      </picker>
+      <view class="inbtn bc3CC cfff tc" @tap="customClick">确认</view>
+    </view>
+    <view class="screening bcfff" hidden="{{scrHide}}">
+      <view class="scrSider">
+        <view></view>
+      </view>
+      <view class="scrList fz24 c444 tc">
+        <view wx:for="{{channel}}" @tap.stop="channelClick({{item}})" class="{{chs.id==item.id&&'bc3CC cfff'}}">{{item.name}}</view>
+      </view>
+    </view>
+    <view class="container points bcfff flex tc">
+      <view @tap.stop="tooClick(3)">
+        <view class="mb10 c7B7 fz24">平均周转天数<text class="problem">?</text></view>
+        <view hidden="{{showToo!=3}}" @tap.stop="tooClickHide()" class="answer bc3CC cfff" style="margin-left:20rpx;margin-top:20rpx;">
+          <text>周转天数增加问号提示：指企业从取得存货/产品入库开始 ，至消耗、销售为止所经历的天数。周转天数越少，说明存货变现的速度越快</text>
+          <image src="../../images/oper/close.png"></image>
+          <view style="margin-left:145rpx;"></view>
+        </view>
+        <view class="fz36 c444 c3CC">{{apiData.turnoverDay}}</view>
+      </view>
+      <view @tap.stop="tooClick(4)">
+        <view class="mb10 c7B7 fz24">周转率<text class="problem">?</text></view>
+        <view hidden="{{showToo!=4}}" @tap.stop="tooClickHide()" class="answer bc3CC cfff" style="margin-left:-90rpx;margin-top:20rpx;">
+          <text>周转率增加提示：库存周转率是在某一时间段内库存货物周转的次数。是反映库存周转快慢程度的指标。周转率越大表明销售情况越好</text>
+          <image src="../../images/oper/close.png"></image>
+          <view style="margin-left:220rpx;"></view>
+        </view>
+        <view class="fz36 c444 c3CC">{{!apiData.rate?'-':apiData.rate+'%'}}</view>
+      </view>
+      <view @tap.stop="tooClick(5)">
+        <view class="mb10 c7B7 fz24">库存金额（万元）<text class="problem">?</text></view>
+        <view hidden="{{showToo!=5}}" @tap.stop="tooClickHide()" class="answer bc3CC cfff" style="margin-left:-240rpx;margin-top:20rpx;">
+          <text>库存金额提示：库存商品数量*库存商品单位成本=库存商品金额</text>
+          <image src="../../images/oper/close.png"></image>
+          <view style="margin-left:430rpx;"></view>
+        </view>
+        <view class="fz36 c444 c3CC">{{apiData.stockAmount}}</view>
+      </view>
+    </view>
+    <view class="container mb20 points1 bcfff flex tc" style="padding-bottom:25rpx;">
+      <view>
+        <view class="c7B7 fz24">类目数：<text class="c444">{{apiData.categoryNumber}}</text></view>
+      </view>
+      <view>
+        <view class="c7B7 fz24">库存总数：<text class="c444">{{apiData.totalStock}}</text></view>
+      </view>
+    </view>
+
+    <view class="bcfff mb20">
+      <view class="btitle mb20">
+        <view class="c444 fz26 inline-block">周转率趋势分析<text @tap.stop="tooClick(1)" class="problem">?</text></view>
+        <view hidden="{{showToo != 1}}" class="answer bc3CC cfff" style="margin-top:-240rpx;margin-left:168rpx;">
+          <text>在某一时间段内库存货物周转的次数。是反映库存周转快慢程度的指标。周转率越大表明销售情况越好。</text>
+          <image src="../../images/oper/close.png"></image>
+          <view></view>
+        </view>
+        <view class="flex fz24 right cb9b choose">
+          <view @tap="earClick(1)" class="{{activeEar==1?'c444 bcf3f':''}}" style="border-right:1px solid #E5E5E5">去年</view>
+          <view @tap="earClick(2)" class="{{activeEar==2?'c444 bcf3f':''}}">今年</view>
+        </view>
+      </view>
+      <view style="padding:10rpx 0rpx;" hidden="{{serImg.lineCanvas == false}}">
+        <canvas style="width:100%;height:200px;" canvas-id="lineCanvas"class="canvas" bindtouchend="touchEndHandler"></canvas>
+        <!-- <canvas style="width:100%;height:300px;" canvas-id="lineCanvas" disable-scroll="true" class="canvas"
+        bindtouchstart="touchHandler" bindtouchmove="moveHandler" bindtouchend="touchEndHandler"></canvas> -->
+      </view>
+      <view wx:if="{{serImg.lineCanvas == false}}" style="padding:90rpx 0rpx;"><image src="../../images/null.png" style="width:249rpx;height:190rpx;margin:auto;display:block;"></image></view>
+    </view>
+    <view class="bcfff">
+      <view class="c444 fz26 btitle">
+        库存分布
+        <text class="problem" @tap.stop="tooClick(2)">?</text>
+        <view class="fz24 right cb9b" style="margin-right:20rpx;">单位：件</view>
+      </view>
+      <view hidden="{{showToo != 2}}" class="answer bc3CC cfff" style="width:500rpx;margin-top:-90rpx;margin-left:190rpx;">
+        <text>截止至当前时间的二级分类库存分布占比</text>
+        <image src="../../images/oper/close.png"></image>
+        <view style="bottom:35rpx;left:-25rpx;transform:rotate(90deg);"></view>
+      </view>
+      <view class="canvas-ionc" hidden="{{serImg.routeCanvas == false}}">
+        <canvas canvas-id="routeCanvas" class="canvas" style="height:300px"></canvas>
+        <!-- <image src="../../images/oper/house.png"></image> -->
+      </view>
+      <view wx:if="{{serImg.routeCanvas == false}}" style="padding:90rpx 0rpx;"><image src="../../images/null.png" style="width:249rpx;height:190rpx;margin:auto;display:block;"></image></view>
+    </view>
+  </view>
+</template>
+<script>
+import wepy from 'wepy';
+import api from '../../utils/api';
+import util,{allColor} from '../../utils/util';
+const wxCharts = require('../../utils/wxcharts.js');
+export default class warehouseAnalysis extends wepy.page {
+  config = {
+    "navigationBarTitleText": "库存分析",
+  }
+  data = {
+    allColor:allColor,
+    lineChart: null,
+    apiData:null,
+    scrHide:true,
+    channel:[{name:'全部',id:0}],
+    chs:{name:'全部',id:0},
+    showToo:0,
+    activeIndex: 3,
+    seeDateType: 'day',
+    sliderLeft: 0,
+    animation: wepy.createAnimation({//动画
+      duration: 300,
+      timingFunction: 'linear'
+    }),
+    startTime : util.currentWeek().start,
+    endTime : util.currentWeek().end,
+    windowWidth:wepy.getSystemInfoSync().windowWidth,
+    activeEar:2,
+    serImg:{
+      routeCanvas:false,
+      lineCanvas:false,
+    },
+  }
+  components = {
+  }
+  methods = {
+    seeclick(e){
+      this.showToo = 0;
+      this.scrHide = true;
+      this.seeDateType = e.currentTarget.dataset.type;
+      this.activeIndex = e.currentTarget.dataset.index;
+      this.animation.translateX(e.target.offsetLeft).step();
+      this.setData({
+        animation:this.animation.export()
+      });
+      if(this.activeIndex != 5) {
+        this.getStockAnalysis({
+          dateType:this.seeDateType
+        });
+      }else{
+        this.customget();
+      }
+    },
+    customClick(){
+      this.customget();
+    },
+    bindDateChange (e) {
+      if(e.currentTarget.dataset.name == 'start'){
+        this.startTime = e.detail.value
+      }else{
+        this.endTime = e.detail.value
+      }
+      if(util.intervalTime(this.startTime,this.endTime)){
+        let newTime = util.setTime(this.startTime,this.endTime,(e.currentTarget.dataset.name == 'start'?90:-90));
+        this.startTime = newTime.startTime;
+        this.endTime = newTime.endTime;
+      }
+    },
+    touchHandler (e) {
+      this.lineChart.scrollStart(e);
+    },
+    moveHandler (e) {
+      this.lineChart.scroll(e);
+    },
+    touchEndHandler (e) {
+      this.lineChart.scrollEnd(e);
+      this.lineChart.showToolTip(e, {
+        format (item, category) {
+          return category + ' ' + item.name + ':' + item.data
+        }
+      });
+    },
+    channelClick(cname){
+      this.chs = cname;
+      this.scrHide = true;
+      if(this.activeIndex != 5) {
+        this.getStockAnalysis({
+          dateType:this.seeDateType
+        });
+      }else{
+        this.customget();
+      }
+    },
+    filterShow(){
+      this.showToo = 0;
+      this.scrHide = false;
+    },
+
+    tooClick(type){
+      this.showToo = type;
+      this.scrHide = true;
+    },
+    tooClickHide(){
+      this.showToo = 0;
+      this.scrHide = true;
+    },
+    earClick(index){
+      this.activeEar = index;
+      if(index == 1){
+        this.columnCanvas('lastYear');
+      }else if(index == 2){
+        this.columnCanvas('year');
+      }
+    }
+  }
+  events = {
+  }
+  onReady(){
+  }
+  onLoad() {
+    let that = this;
+    api.getAllStorage(data=>{
+      if(data.data){
+        that.channel = that.channel.concat(data.data);
+      }
+      if(this.activeIndex == 1){//默认今天
+        that.getStockAnalysis({
+          dateType:'day',
+        },function(){
+          that.columnCanvas('year');
+        });
+      }else if(this.activeIndex == 3){//默认月
+        that.getStockAnalysis({
+          dateType:'month',
+        },function(){
+          that.columnCanvas('year');
+        });
+        this.animation.translateX(106).step();
+        this.setData({
+          animation:this.animation.export()
+        });
+      }
+      that.$apply();
+    });
+  }
+  customget(){
+    this.getStockAnalysis({
+      dateType:'custom',
+      startDate:this.startTime,
+      endDate:this.endTime
+    });
+  }
+  getStockAnalysis(params,backFun){
+    let that = this;
+    params.storageId = that.chs.id;
+    api.getStockAnalysis({
+      query: params
+    },data=>{
+      if(data.data){
+        that.apiData = data.data;
+        that.ringCanvas();
+        that.$apply();
+      }
+      backFun && backFun();
+    });
+  }
+  ringCanvas(){//圆形图
+    let serieslist = [];
+    let that = this;
+    for(let i=0;i<that.apiData.stockMap.length; i++){
+      serieslist.push({
+        name: that.apiData.stockMap[i].name.substring(0,4)+that.apiData.stockMap[i].number,//+'元',
+        data: that.apiData.stockMap[i].ratio,
+        color:that.allColor[i],
+        stroke: false,
+        format (val) {
+          return that.apiData.stockMap[i].ratio+'%'
+        }
+      });
+    }
+    // return;
+    // for(let i in that.apiData.stockMap){
+    //   serieslist.push({
+    //     name: i+'('+that.apiData.stockMap[i]+'%)',
+    //     data: that.apiData.stockMap[i],
+    //     color:that.allColor[num],
+    //     stroke: false,
+    //     format (val) {
+    //       return that.apiData.stockMap[i]+'%';
+    //     }
+    //   });
+    //   num++;
+    // }
+    if(serieslist.length){
+      this.serImg.routeCanvas = true;
+    }else{
+      this.serImg.routeCanvas = false;
+      return;
+    }
+    new wxCharts({
+      animation: false, //是否有动画
+      canvasId: 'routeCanvas',
+      type: 'ring',
+      extra: {
+        ringWidth: 25,
+        pie: {
+          offsetAngle: 0
+        }
+      },
+      series: serieslist,
+      disablePieStroke: true,
+      width: that.windowWidth,
+      height: 300,
+      dataLabel: true,
+      legend: true,
+      padding: 0
+    });
+  }
+  columnCanvas(year){
+    let that = this;
+    api.getRateAnalysis({
+      query: {
+        dateType:year,
+      }
+    },data=>{
+      if(data.data){
+        let catlist = [];
+        let datalist = [];
+        for(let i in data.data){
+          catlist.push(i);
+          datalist.push(data.data[i]);
+        }
+        if(datalist.length){
+          that.serImg.lineCanvas = true;
+        }else{
+          that.serImg.lineCanvas = false;
+          return;
+        }
+        if(catlist.length == 12){
+          catlist = ['一月','二月','三月','四月','五月','六月','七月','八月','九月','十月','十一月','十二月'];
+        }
+        that.lineChart = new wxCharts({
+          canvasId: 'lineCanvas',
+          type: 'line',
+          categories: catlist,
+          animation: false,
+          series: [{
+            name: '',
+            color:allColor[0],
+            defaultColor:'#F00',
+            data: datalist,
+            format (val, name) {
+              return val.toFixed(2)+"%";
+            },
+            method(n,i){
+              return '#F00';
+            },
+          }],
+          xAxis: {
+            fontColor: '#B9B9C1',
+            disableGrid: true,
+          },
+          yAxis: {
+            format (val, name) {
+              return val+"%";
+            },
+            min: 0,
+            fontColor: "#CCCCCC",
+            gridColor:"#F5F5F5",
+          },
+          width: that.windowWidth,
+          height: 200,
+          dataLabel: false,// 是否在图表中显示数据内容值
+          legend: false, // 是否显示图表下方各类别的标识
+          dataPointShape: false,// 是否在图表中显示数据点图形标识
+          enableScroll: false,// 是否开启图表可拖拽滚动
+          extra: {
+            lineStyle: 'curve',
+          }
+        });
+      }
+      that.$apply();
+    });
+  }
+}
+</script>

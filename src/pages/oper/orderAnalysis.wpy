@@ -1,0 +1,318 @@
+<style lang="less">
+@import '../../styles/style.less';
+.points>view {
+  width:50%;
+}
+.points1>view{
+  width:50%;
+}
+.areaList view {
+  width:50%;
+}
+.trtite {
+  width:100%;
+}
+</style>
+<template>
+  <view class="container bcfff flex c7B7 fz24 {{activeIndex!=5?'mb20':'mb1'}}">
+    <view class="trtite">
+      <view class="flex">
+        <view @tap.stop="seeclick({{$event}})" data-index="1" data-type="day" class="{{activeIndex==1&&'active'}}"><view>今天</view></view>
+        <view @tap.stop="seeclick({{$event}})" data-index="2" data-type="weeks" class="{{activeIndex==2&&'active'}}"><view>本周</view></view>
+        <view @tap.stop="seeclick({{$event}})" data-index="3" data-type="month" class="{{activeIndex==3&&'active'}}"><view>本月</view></view>
+        <view @tap.stop="seeclick({{$event}})" data-index="4" data-type="year" class="{{activeIndex==4&&'active'}}"><view>本年</view></view>
+        <view @tap.stop="seeclick({{$event}})" data-index="5" class="{{activeIndex==5&&'active'}}"><view>自定义</view></view>
+      </view>
+      <view class="active-x" animation="{{animation}}"></view>
+    </view>
+  </view>
+  <view class="indate mb20 bcfff flex fz24 c7B7" style="padding:20rpx;" hidden="{{activeIndex!=5}}">
+    <picker mode="date" value="{{startTime}}" data-name="start" end="{{endTime}}" @change="bindDateChange">
+      <view class="picker">{{startTime}}</view>
+    </picker>
+    <view class="indz">至</view>
+    <picker mode="date" value="{{endTime}}" data-name="end" start="{{startTime}}" @change="bindDateChange">
+      <view class="picker">{{endTime}}</view>
+    </picker>
+    <view class="inbtn bc3CC cfff tc" @tap="customClick">确认</view>
+  </view>
+  <view class="container points bcfff flex tc">
+    <view>
+      <view class="mb10 c7B7 fz24">订单总金额(元)</view>
+      <view class="fz36 c444 c3CC">{{apiData.totalPrice}}</view>
+    </view>
+    <view>
+      <view class="mb10 c7B7 fz24">订单转化率</view>
+      <view class="fz36 c444 c3CC">{{!apiData.ratio?'-':apiData.ratio+'%'}}</view>
+    </view>
+  </view>
+  <view class="container mb20 points1 bcfff flex tc" style="padding-bottom:25rpx;">
+    <view>
+      <view class="c7B7 fz24">订单笔数(笔)：<text class="c444">{{apiData.orderCount}}</text></view>
+    </view>
+    <view>
+      <view class="c7B7 fz24">平均客单价(元)：<text class="c444">{{apiData.perTicketSales}}</text></view>
+    </view>
+  </view>
+  <view class="bcfff mb20">
+    <view class="c444 fz26 btitle mb20">订单金额分布(业务员)</view>
+    <view style="" hidden="{{serImg.pointsCanvas == false}}">
+      <canvas canvas-id="pointsCanvas" disable-scroll="true" class="canvas" style="width:100%;height:300px;"></canvas>
+    </view>
+    <view wx:if="{{serImg.pointsCanvas == false}}" style="padding:90rpx 0rpx;"><image src="../../images/null.png" style="width:249rpx;height:190rpx;margin:auto;display:block;"></image></view>
+  </view>
+  <view class="bcfff mb20">
+    <view class="c444 fz26 btitle">订单金额分布（线路）</view>
+    <view class="areaList c7B7 flex fz26 tc">
+      <view class="{{activeArea==1?'active':''}}" @tap="areaclick(1)">按金额</view>
+      <view class="{{activeArea==2?'active':''}}" @tap="areaclick(2)">按笔数</view>
+    </view>
+    <view class="canvas-ionc" hidden="{{serImg.routeCanvas == false}}">
+      <canvas canvas-id="routeCanvas" disable-scroll="true" class="canvas"></canvas>
+      <!-- <image src="../../images/oper/order.png" wx:if="{{activeArea!=3}}"></image> -->
+    </view>
+    <view wx:if="{{serImg.routeCanvas == false}}" style="padding:90rpx 0rpx;"><image src="../../images/null.png" style="width:249rpx;height:190rpx;margin:auto;display:block;"></image></view>
+  </view>
+  <view class="bcfff">
+    <view class="c444 fz26 btitle mb20">客户金额分布</view>
+    <view style="" hidden="{{serImg.fiiCanvas == false}}">
+      <canvas canvas-id="fiiCanvas" disable-scroll="true" class="canvas" style="width:100%;height:300px;"></canvas>
+    </view>
+    <view wx:if="{{serImg.fiiCanvas == false}}" style="padding:90rpx 0rpx;"><image src="../../images/null.png" style="width:249rpx;height:190rpx;margin:auto;display:block;"></image></view>
+  </view>
+</template>
+<script>
+import wepy from 'wepy';
+import api from '../../utils/api';
+import util,{allColor} from '../../utils/util';
+const wxCharts = require('../../utils/wxcharts.js');
+export default class orderAnalysis extends wepy.page {
+  config = {
+    "navigationBarTitleText": "订单分析",
+  }
+  data = {
+    allColor:allColor,
+    apiData:null,
+    activeIndex: 2,
+    sliderLeft: 0,
+    animation: wepy.createAnimation({//动画
+      duration: 300,
+      timingFunction: 'linear'
+    }),
+    startTime : util.currentWeek().start,
+    endTime : util.currentWeek().end,
+    windowWidth:wepy.getSystemInfoSync().windowWidth,
+    activeArea:1,
+    serImg:{
+      pointsCanvas:false,
+      routeCanvas:false,
+      fiiCanvas:false,
+    },
+  }
+  components = {
+
+  }
+  methods = {
+    seeclick(e){
+      this.activeArea = 1;
+      this.activeIndex = e.currentTarget.dataset.index;
+      this.animation.translateX(e.target.offsetLeft).step();
+      this.setData({
+        animation:this.animation.export()
+      });
+      if(this.activeIndex != 5) {
+        this.getOrderAnalysis({
+          dateType:e.currentTarget.dataset.type
+        });
+      }else{
+        this.customget();
+      }
+    },
+    customClick(){
+      this.customget();
+    },
+    bindDateChange (e) {
+      if(e.currentTarget.dataset.name == 'start'){
+        this.startTime = e.detail.value
+      }else{
+        this.endTime = e.detail.value
+      }
+      if(util.intervalTime(this.startTime,this.endTime)){
+        let newTime = util.setTime(this.startTime,this.endTime,(e.currentTarget.dataset.name == 'start'?90:-90));
+        this.startTime = newTime.startTime;
+        this.endTime = newTime.endTime;
+      }
+    },
+    areaclick:function(are){
+      this.activeArea = are;
+      this.blockHtml(are);
+    }
+  }
+  events = {
+  }
+  onReady(){
+  }
+  onLoad() {
+    if(this.activeIndex == 1){//默认今天
+      this.getOrderAnalysis({
+        dateType:'day'
+      });
+    }else if(this.activeIndex == 2){//默认周
+      this.getOrderAnalysis({
+        dateType:'weeks'
+      });
+      this.animation.translateX(76).step();
+      this.setData({
+        animation:this.animation.export()
+      });
+    }
+  }
+  customget(){
+    this.getOrderAnalysis({
+      dateType:'custom',
+      startDate:this.startTime,
+      endDate:this.endTime
+    });
+  }
+  getOrderAnalysis(params){
+    let that = this;
+    api.getOrderAnalysis({
+      query: params
+    },function(data){
+      if(data.data){
+        that.apiData = data.data;
+        that.blockHtml(1);
+        if(that.apiData.salemanMap){
+          let catlist = [];
+          let datalist = [];
+          let allnum = 0;
+          for(let i in that.apiData.salemanMap){
+            catlist.push(i);
+            datalist.push(that.apiData.salemanMap[i]);
+            allnum+=that.apiData.salemanMap[i];
+          }
+          that.columnCanvas('pointsCanvas',catlist,datalist,true,'合计金额：'+allnum+'元');
+        }
+        if(that.apiData.intervalMap){
+          let catlist = [];
+          let datalist = [];
+          let allnum = 0;
+          for(let i in that.apiData.intervalMap){
+            catlist.push(i);
+            datalist.push(that.apiData.intervalMap[i]);
+            allnum+=that.apiData.intervalMap[i];
+          }
+          that.columnCanvas('fiiCanvas',catlist,datalist,true,'总客户数：'+allnum);
+        }
+        that.$apply();
+      }
+    });
+  }
+  blockHtml(type){//区域
+    let shopType;
+    let serieslist = [];
+    if(type == 1){
+      shopType = this.apiData.lineMap;
+    }else if(type == 2){
+      shopType = this.apiData.lineNumberMap;
+    }
+    if(type == 1){
+      for(let i=0; i<shopType.length; i++){
+        serieslist.push({
+          name: shopType[i].name+'/金额'+shopType[i].number,
+          data: shopType[i].ratio,
+          color:this.allColor[i],
+          stroke: false,
+          format (val) {
+            return shopType[i].name+'('+shopType[i].ratio+'%)';
+          }
+        });
+      }
+    }else if(type == 2){
+      let num = 0;
+      for(let i in shopType){
+        serieslist.push({
+          name: i,
+          data: shopType[i],
+          color:this.allColor[num],
+          stroke: false,
+          format (val) {
+            return i+'('+shopType[i]+'笔)';
+          }
+        });
+        num++;
+      }
+    }
+    this.ringCanvas('routeCanvas',serieslist,type==1?true:false);
+  }
+  columnCanvas(cid, categorieslist, datalist,legend,allnum){
+    if(datalist.length){
+      this.serImg[cid] = true;
+    }else{
+      this.serImg[cid] = false;
+      return;
+    }
+    new wxCharts({
+        canvasId: cid,
+        type: 'column',
+        animation: false,
+        categories: categorieslist,
+        series: [{
+            name: allnum || '总数',
+            color:this.allColor[0],
+            data: datalist,
+            format (val, name) {
+                return val;
+            }
+        }],
+        yAxis: {
+            format (val) {
+                return val;
+            },
+            // title: 'hello',
+            min: 0,
+            // max: cmax,
+            gridColor:"#F5F5F5",
+        },
+        xAxis: {
+            disableGrid: false,
+            type: 'calibration'
+        },
+        extra: {
+            column: {
+                width: 20,
+            }
+        },
+        width: this.windowWidth,
+        height: 300,
+        legend:legend || false,
+    });
+  }
+  ringCanvas(cid,serieslist,legend){//圆形图
+    if(serieslist.length){
+      this.serImg[cid] = true;
+    }else{
+      this.serImg[cid] = false;
+      return;
+    }
+    new wxCharts({
+      animation: false, //是否有动画
+      canvasId: cid,
+      type: 'ring',
+      extra: {
+        ringWidth: 25,
+        pie: {
+          offsetAngle: 0
+        }
+      },
+      series: serieslist,
+      disablePieStroke: true,
+      width: this.windowWidth,
+      height: 300,
+      dataLabel: true,
+      legend: legend || false,
+      padding: 0
+    });
+  }
+}
+</script>

@@ -1,0 +1,611 @@
+<style lang="less">
+.orderNo,
+.shopName {
+	color:#7B7C87;
+	font-size:26rpx;
+	margin-top:5rpx;
+}
+.createTime {
+	color:#ccc;
+	font-size:24rpx;
+	margin-top:5rpx;
+}
+.weui-search-bar {
+	position: relative;
+	padding: 6px 14px;
+	display: -webkit-box;
+	display: -webkit-flex;
+	display: flex;
+	box-sizing: border-box;
+	background-color: #16B4BA;
+}
+
+.weui-icon-search {
+	margin-right: 8px;
+	font-size: inherit
+}
+
+.weui-icon-search_in-box {
+	position: absolute;
+	left: 10px;
+	top: 8px
+}
+
+.weui-search-bar__text {
+	display: inline-block;
+	font-size: 14px;
+	vertical-align: middle;
+  margin-top:-4px;
+}
+
+.weui-search-bar__form {
+	position: relative;
+	-webkit-box-flex: 1;
+	-webkit-flex: auto;
+	flex: auto;
+	border-radius: 5px;
+	background: #fff;
+}
+
+.weui-search-bar__box {
+	position: relative;
+	padding-left: 30px;
+	padding-right: 30px;
+	width: 100%;
+	box-sizing: border-box;
+	z-index: 1
+}
+
+.weui-search-bar__input {
+	height: 32px;
+	line-height: 32px;
+	font-size: 14px
+}
+
+.weui-icon-clear {
+	position: absolute;
+	top: 0;
+	right: 0;
+	padding: 9px 8px;
+	font-size: 0
+}
+
+.weui-search-bar__label {
+	position: absolute;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	left: 0;
+	z-index: 2;
+	border-radius: 5px;
+	text-align: center;
+	color: #9b9b9b;
+	background: #FFFFFF;
+	line-height: 32px
+}
+
+.weui-search-bar__cancel-btn {
+	margin-left: 14px;
+	line-height: 32px;
+	color: #FFF;
+  font-size: 14px;
+	white-space: nowrap
+}
+.weui-search-bar__cancel-btn > image {
+  width: 16px;
+  height: 16px;
+	position: relative;
+	top:3px;
+}
+
+.searchbar-result {
+  font-size: 14px;
+  color:#34393F;
+  background: #FFFFFF;
+  position:absolute;
+  top:44px;
+  left:0px;
+  right:0px;
+  bottom:0px;
+  z-index: 2;
+}
+.searchbar-result:before {
+  display: none;
+}
+.weui-cell{
+  margin-left: 25px;
+  padding: 12px 15px 12px 17px;
+  border-bottom:1rpx dashed #e5e5e5;
+}
+.screening {
+	position: fixed;
+	left: 0rpx;
+	right: 0rpx;
+	top: 0rpx;
+	bottom: 0rpx;
+	background:rgba(0,0,0,0);
+	z-index: 2;
+}
+.screening .scrData {
+	position:absolute;
+	width:60%;
+	right:-70%;
+	top:0rpx;
+	bottom:0rpx;
+	background-color: #FFFFFF;
+	padding:10rpx 30rpx 30rpx 30rpx;
+	overflow:auto;
+}
+.in-screening {
+  animation: in-screening 0.15s forwards 0s;
+}
+@keyframes in-screening {
+  0% {
+    background:rgba(0,0,0,0);
+  }
+  100% {
+    background:rgba(0,0,0,0.5);
+  }
+}
+.screening .in-scrData {
+  animation: in-scrData 0.6s forwards 0.15s;
+}
+@keyframes in-scrData {
+  0% {
+    right:-70%;
+  }
+  100% {
+    right:0;
+  }
+}
+.screening .scrData>view {
+	height:100rpx;
+	line-height: 100rpx;
+}
+.screening .scrData>view:not(:first-child) {
+	border-bottom: 1rpx solid #ebebeb;
+}
+.screening .scrData>view:last-child {
+	border-bottom:0rpx;
+}
+
+.screening .keyList>view:nth-child(3n-1) {
+	margin-left: 30rpx;
+	margin-right: 30rpx;
+}
+.screening .getbtn {
+	width: calc(70% - 2px);
+	position: fixed;
+	bottom: -300rpx;
+	right: 0rpx;
+	border-top:1rpx solid #E5E5E5;
+}
+.screening .getbtn>view {
+	width: 50%;
+	padding: 30rpx 20rpx 50rpx 20rpx;
+}
+.screening .getbtn>view>view {
+	height: 72rpx;
+	line-height: 72rpx;
+	border-radius: 6rpx;
+}
+.screening .getbtn {
+  animation: in-getbtn 0.5s forwards 0.6s;
+}
+@keyframes in-getbtn {
+  0% {
+    bottom:-300rpx;
+  }
+  100% {
+    bottom:0;
+  }
+}
+.screening .xshow {
+	width: 80rpx;
+	height: 80rpx;
+}
+.screening .xshow>image {
+	width: 24rpx;
+	height: 24rpx;
+}
+.screening .xshow>image.rotate{
+	transform:rotate(180deg);
+}
+.indate {
+	height: 60rpx;
+	line-height: 60rpx;
+}
+.indate picker {
+	width:40%;
+}
+.indate > view {
+	width:20%;
+}
+.indate picker view{
+	border:1rpx solid #E5E5E5;
+}
+</style>
+<template>
+	<view class="weui-search-bar">
+		<view class="weui-search-bar__form">
+			<view class="weui-search-bar__box">
+				<icon class="weui-icon-search_in-box" type="search" size="14"></icon>
+				<input type="text" class="weui-search-bar__input" placeholder="{{inputText}}" placeholder-style="#34393F" confirm-type="search" value="{{inputVal}}" focus="{{inputShowed}}" @input="inputTyping" @confirm="searchResults"/>
+				<view class="weui-icon-clear" wx:if="{{inputVal.length > 0}}" @tap="clearInput">
+					<icon type="clear" size="14"></icon>
+				</view>
+			</view>
+			<label class="weui-search-bar__label" hidden="{{inputShowed}}" @tap="showInput">
+				<icon class="weui-icon-search" type="search" size="14"></icon>
+				<view class="weui-search-bar__text">{{inputText}}</view>
+				<!-- 请输入门店门称搜索 -->
+			</label>
+		</view>
+		<view class="weui-search-bar__cancel-btn" hidden="{{!inputShowed}}" @tap="cancelInput">取消</view>
+		<view class="weui-search-bar__cancel-btn" hidden="{{inputShowed}}" wx-if="{{screening}}" @tap="screenSelect(true)">
+			<image src="../../images/oper/search-screen.png"></image>
+		</view>
+	</view>
+	<view class="searchbar-result" wx:if="{{inputVal.length == 0 && inputShowed && histRec.length>0}}">
+		<view style="height:100%;overflow-y: auto;">
+			<view style="color:#7B7C87;font-size:12px;padding:5px 10px;">历史搜索</view>
+			<view class="weui-cell" wx:for="{{histRec}}" @tap="againSearch({{item}})">
+				<view class="weui-cell__bd">
+					<view style="display: inline-block;">{{item.sname}}</view>
+					<view style="color:#ccc;font-size:12px;float:right;">{{item.time}}</view>
+				</view>
+			</view>
+		</view>
+	</view>
+	<view class="searchbar-result" wx:if="{{inputVal.length > 0}}">
+		<view style="height:100%;overflow-y: auto;">
+			<view style="color:#7B7C87;font-size:12px;padding:5px 10px;" wx:if="{{getSearchList.length}}">搜索到<text style="color:#FF6644">{{getSearchList.length}}</text>条</view>
+			<view class="weui-cell" wx:for="{{getSearchList}}" wx:for-index="idx" wx:for-item="itemName" wx:if="{{getSearchName}}" @tap="searchclick({{itemName}})">
+				<view class="weui-cell__bd">
+					<view>{{itemName[getSearchName]}}</view>
+					<view wx:for="{{getSearchNameList}}" class="{{item}}">{{itemName[item]}}</view>
+				</view>
+			</view>
+			<Warning :list.sync="getSearchList" wx:if="{{!getSearchName}}"/>
+		</view>
+	</view>
+	<view class="screening {{screenShow?'in-screening':''}}" wx:if="{{screenShow}}" @tap="screenSelect(false,true)">
+		<view class="scrData {{screenShow?'in-scrData':''}}" @tap.stop="screenSelect(true)">
+			<view wx:if="{{screening==1}}">
+				<view class="fz24 c7B7">业务员</view>
+				<view class="fz28 {{busId==''?'c3CC':'c444'}}" @tap.stop="screenConfirm('')">全部</view>
+				<view class="fz28 {{item.id==busId?'c3CC':'c444'}}" wx:for="{{busList}}" @tap.stop="screenConfirm({{item.id}})">{{item.userName}}</view>
+			</view>
+			<view wx:if="{{screening==2}}">
+				<view class="fz24 c7B7" @tap.stop="showAllClick({{0}})">客户类型
+					<view class="xshow right tr" wx:if="{{keyList.length>6}}">
+						<image class="{{showAll[0]?'rotate':''}}" src="../../images/fun/xshow.png"/>
+					</view>
+				</view>
+				<view class="keyList">
+					<view wx:for="{{keyList}}" wx:if="{{showAll[0] || index<6}}" class="inline-block {{item.id==keyId.id?'bc3CC cfff':'bcE5e c444'}} fz24 tc h1ddd ove-h"
+					style="height:70rpx;line-height:70rpx;border-radius: 6rpx;width:calc((100% - 60rpx)/3);"
+					@tap="screeningOksalesman({{item}},'keyId')">
+						{{item.text}}
+					</view>
+				</view>
+				<view class="fz24 c7B7" style="margin-top:30rpx" @tap.stop="showAllClick({{1}})">业务员
+					<view class="xshow right tr" wx:if="{{busList.length>6}}"><image class="{{showAll[1]?'rotate':''}}" src="../../images/fun/xshow.png"/></view>
+				</view>
+				<view class="keyList">
+					<view class="inline-block {{busId==''?'bc3CC cfff':'bcE5e c444'}} fz24 tc h1ddd ove-h}}"
+					style="height:70rpx;line-height:70rpx;border-radius: 6rpx;width:calc((100% - 60rpx)/3);"
+					@tap.stop="screeningOktype('')">全部</view>
+					<view wx:for="{{busList}}" wx:if="{{showAll[1] || index<6}}"
+					class="inline-block {{item.id==busId?'bc3CC cfff':'bcE5e c444'}} fz24 tc h1ddd ove-h"
+					style="height:70rpx;line-height:70rpx;border-radius: 6rpx;width:calc((100% - 60rpx)/3);"
+					@tap="screeningOktype({{item.id}})">{{item.userName}}</view>
+				</view>
+				<view style="height:300rpx;">
+					<view class="flex getbtn fz26 tc bcfff">
+						<view><view class="bcE5e c444" @tap.stop="reset">重置</view></view>
+						<view><view class="bc3CC cfff" @tap.stop="confirm">确认</view></view>
+					</view>
+				</view>
+			</view>
+			<view wx:if="{{screening==3||screening==4}}">
+				<view class="fz24 c7B7" @tap.stop="showAllClick({{0}})">{{screening==3?'入':'出'}}库状态
+					<view class="xshow right tr" wx:if="{{inyStatusList.length>6}}">
+						<image class="{{showAll[0]?'rotate':''}}" src="../../images/fun/xshow.png"/>
+					</view>
+				</view>
+				<view class="keyList">
+					<view wx:for="{{inyStatusList}}" wx:if="{{showAll[0] || index<6}}" class="inline-block {{item.id==inyStatus.id?'bc3CC cfff':'bcE5e c444'}} fz24 tc h1ddd ove-h"
+					style="height:70rpx;line-height:70rpx;border-radius: 6rpx;width:calc((100% - 60rpx)/3);"
+					@tap="screeningOksalesman({{item}},'inyStatus')">
+						{{item.text}}
+					</view>
+				</view>
+				<view class="fz24 c7B7" @tap.stop="showAllClick({{1}})">{{screening==3?'入':'出'}}库仓库
+					<view class="xshow right tr" wx:if="{{storeList.length>6}}">
+						<image class="{{showAll[1]?'rotate':''}}" src="../../images/fun/xshow.png"/>
+					</view>
+				</view>
+				<view class="keyList">
+					<view wx:for="{{storeList}}" wx:if="{{showAll[1] || index<6}}" class="inline-block {{item.id==storeId.id?'bc3CC cfff':'bcE5e c444'}} fz24 tc h1ddd ove-h"
+					style="height:70rpx;line-height:70rpx;border-radius: 6rpx;width:calc((100% - 60rpx)/3);"
+					@tap="screeningOksalesman({{item}},'storeId')">
+						{{item.name}}
+					</view>
+				</view>
+				<view class="fz24 c7B7" @tap.stop="showAllClick({{2}})">日期
+					<view class="xshow right tr" wx:if="{{keyList.length>6}}">
+						<image class="{{showAll[2]?'rotate':''}}" src="../../images/fun/xshow.png"/>
+					</view>
+				</view>
+				<view class="keyList">
+					<view wx:for="{{timeList}}" class="inline-block {{item.type==timeId.type?'bc3CC cfff':'bcE5e c444'}} fz24 tc h1ddd ove-h"
+					style="height:70rpx;line-height:70rpx;border-radius: 6rpx;width:calc((100% - 60rpx)/3);"
+					@tap="screeningOksalesman({{item}},'timeId')">
+					{{item.tname}}
+					</view>
+				</view>
+				<view class="indate bcfff flex fz24 c7B7 tc" hidden="{{timeId.type != 'custom'}}">
+					<picker mode="date" value="{{startTime}}" data-name="start" end="{{endTime}}" @change="bindDateChange">
+						<view class="picker">{{startTime}}</view>
+					</picker>
+					<view class="indz">至</view>
+					<picker mode="date" value="{{endTime}}" data-name="end" start="{{startTime}}" @change="bindDateChange">
+						<view class="picker">{{endTime}}</view>
+					</picker>
+				</view>
+				<view style="height:300rpx;">
+					<view class="flex getbtn fz26 tc bcfff">
+						<view><view class="bcE5e c444" @tap.stop="reset">重置</view></view>
+						<view><view class="bc3CC cfff" @tap.stop="confirm">确认</view></view>
+					</view>
+				</view>
+			</view>
+		</view>
+	</view>
+</template>
+<script>
+import wepy from 'wepy';
+import api,{getStoreType,getStaffOfYWY} from '../../utils/api';
+import {jsonTurnAarray,iosDate,currentWeek,intervalTime,setTime} from '../../utils/util';
+import Warning from '../list/warning';
+export default class search extends wepy.component {
+  data = {
+		wxUrl:'',
+		histRec: [],
+		showAll: [],
+    inputVal: "",
+		screenShow: false,
+		busId:'',
+		busList:[],
+		keyId:{
+			id: '',
+			text: '全部'
+		},
+		keyList:[],
+		getSearchList: [],
+		getSearchName: '' ,
+		getSearchNameList:[],
+		myDate: new Date().toLocaleString(),
+		timeId:{type:''},
+		timeList:[{type:'',tname:'全部'},{type:'day',tname:'今天'},{type:'yesterDay',tname:'昨天'},{type:'nearly7Days',tname:'近7天'},
+		{type:'month',tname:'本月'},{type:'lastMonth',tname:'上月'},{type:'custom',tname:'自定义'}],
+		inyStatus:{id:''},
+		inyStatusList:[],
+		storeId:{id:''},
+		storeList:[{id:'',name:'全部'}],
+		startTime : currentWeek().start,
+    endTime : currentWeek().end,
+  }
+  props = {
+    // 静态传值
+    inputText: {
+      // type: String,
+      default: '搜索'
+    },
+    screening: {
+      // type: String,
+			// default: '',
+    },
+    inputShowed: {
+			type: Boolean,
+			default: false,
+			twoWay: true
+		},
+		canvasHide: {
+			type: Boolean,
+			default: false,
+			twoWay: true,
+		}
+  }
+	components = {
+		Warning,
+	}
+  methods = {
+    showInput() {
+      this.inputShowed = true;
+			this.histRec = wepy.getStorageSync(this.wxUrl);
+    },
+    hideInput() {
+      this.inputVal = "";
+      this.inputShowed = false;
+    },
+    clearInput() {
+      this.inputVal = "";
+    },
+		cancelInput(){
+			this.inputVal = "";
+      this.inputShowed = false;
+		},
+    inputTyping(e) {
+			// e.detail.value = e.detail.value.replace(/[^\w\u4E00-\u9FA5]/g, '');
+      this.inputVal = e.detail.value;
+			this.getSearchList = [];
+    },
+    screenSelect(type,is) {//左侧透明
+			if(is=='true' && (this.screening == 2 || this.screening == 3 || this.screening == 4)){//recursiveValue 没有点击确认，直接回归上次值
+				this.busId = this.recursiveValue.busId;
+				this.keyId = this.recursiveValue.keyId;
+
+				// this.screening == 3
+				this.timeId = this.recursiveValue.timeId;
+				this.inyStatus = this.recursiveValue.inyStatus;
+				this.storeId = this.recursiveValue.storeId;
+			}
+			this.screenShow = type=='true'?true:false;
+			this.canvasHide = this.screenShow;
+		},
+		screenConfirm(id){//只有业务时 确认
+			this.canvasHide = false;
+			this.screenShow = false;
+			this.busId = id;
+			this.$emit('confirmSearch',{
+				busId: this.busId,
+			});
+		},
+		screeningOktype(id){//有业务员和客户类型点击选中业务员
+			this.busId = id;
+		},
+		screeningOksalesman(keyId,typeName){//客户类型
+			this[typeName] = keyId;
+		},
+		reset(){//重置
+			this.busId = '';
+			this.keyId = {id:'',text:'全部'};
+			this.timeId = {type:''};
+			this.inyStatus = {id:''};
+			this.storeId = {id:''};
+		},
+		confirm(){//确认
+			this.canvasHide = false;
+			this.screenShow = false;
+			if(this.screening == '3' || this.screening == 4){
+				//this.timeId.type == 'custom'
+				this.recursiveValue = {
+					timeId: this.timeId,
+					inyStatus: this.inyStatus,
+					storeId: this.storeId,
+					startDate:this.startTime,
+					endDate:this.endTime
+				};
+			}else{
+				this.recursiveValue = {
+					busId: this.busId,
+					keyId: this.keyId,
+				};
+			}
+			this.$emit('confirmSearch',this.recursiveValue);
+		},
+		showAllClick(num){
+			this.showAll[num] = this.showAll[num] ? false : true;
+		},
+		searchResults(){
+			if(this.inputVal){
+				this.searchReturn();
+			}
+		},
+		searchclick(data){
+			this.$emit('backSearch',data);
+		},
+		againSearch(data){//重新搜索
+			this.inputVal = data.sname;
+			this.searchReturn();
+		},
+		bindDateChange (e) {
+      if(e.currentTarget.dataset.name == 'start'){
+        this.startTime = e.detail.value
+      }else{
+        this.endTime = e.detail.value
+      }
+    },
+  }
+	watch = {
+		'inputVal':(newVal,oldVal)=>{
+			if(newVal == '' && this.inputShowed == true){
+				this.histRec = wepy.getStorageSync(this.wxUrl);
+				this.$apply();
+			}
+		},
+		'screening':(newVal,oldVal)=>{
+			if(oldVal == '' && newVal){
+				this.onLoad();
+			}
+		}
+	}
+	onLoad(){
+		const that = this;
+		that.recursiveValue = {
+			busId:'',
+			keyId:{id:''},
+			timeId:{type:''},
+			inyStatus:{id:''},
+			storeId:{id:''},
+		}
+		that.wxUrl = getCurrentPages()[getCurrentPages().length-1].route.replace(/\//g,'_');
+		if(that.screening == 2){
+			getStoreType(data=>{
+				that.keyList = jsonTurnAarray(data.data);
+				that.keyList.unshift(that.keyId);
+				that.$apply();
+			});
+		}
+		if(that.screening == 1 || that.screening == 2){
+			getStaffOfYWY(data=>{
+				that.busList = data.data;
+				that.$apply();
+			});
+		}else if(that.screening == 3 || that.screening == 4){
+			if(that.screening == 3){
+				that.inyStatusList=[{id:'',text:'全部'},{id:1,text:'待审核'},/*{id:2,text:'审核不通过'},*/{id:3,text:'待上架'},{id:4,text:'已上架'}];
+			}else if(that.screening == 4){
+				that.inyStatusList=[{id:'',text:'全部'},{id:3,text:'待出库'},{id:4,text:'部分出库'},{id:5,text:'已出库'}];
+			}
+			api.getAllStorage(data=>{
+				that.storeList = that.storeList.concat(data.data);
+				that.$apply();
+			});
+		}
+	}
+	searchReturn(){
+		let that = this;
+		this.$emit('getSearch',this.inputVal,(data,sname,...strList)=>{//sname,...strList/*backCall*/){
+			if(data && data.length){
+				let storage = wepy.getStorageSync(that.wxUrl);
+				if(storage){
+					storage = storage.filter(items=>{
+						if(items.sname != that.inputVal){
+							return items;
+						}
+					});
+					storage.unshift({
+						sname: that.inputVal,
+						time: that.myDate
+					});
+				}else{
+					storage = [{
+						sname: that.inputVal,
+						time: that.myDate
+					}];
+				}
+				wepy.setStorageSync(that.wxUrl, storage);
+
+				data = data.map((item)=>{
+					let mydate = new Date(item.createTime);
+					item.createTime = mydate.getFullYear()+'-'+(mydate.getMonth()+1)+'-'+mydate.getDate()+' '+(mydate.getHours()>9?mydate.getHours():'0'+mydate.getHours())+':'+(mydate.getMinutes()>9?mydate.getMinutes():'0'+mydate.getMinutes());
+					return item;
+				});
+			}
+			that.getSearchList = data;
+			that.getSearchName = sname;
+			that.getSearchNameList = strList;
+			that.$apply();
+		},(data,comName)=>{
+			console.log(data,comName);
+		});
+	}
+  // events = {
+  //   //父传
+  //   'some-event': () => {}
+  // }
+}
+</script>

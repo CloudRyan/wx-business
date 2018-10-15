@@ -1,0 +1,64 @@
+<style lang="less">
+.warLists {
+	padding:20rpx 0;
+	line-height: 40rpx;
+	border-bottom:1rpx solid #e8e8e8;
+}
+.imgCenter image{
+  width:150rpx;
+  height: 150rpx;
+}
+.state {
+  display: inline-block;
+  height:30rpx;
+  line-height: 30rpx;
+  text-align: center;
+  border-radius: 30rpx;
+  padding: 0rpx 10rpx;
+  margin-right: 20rpx;
+}
+</style>
+<template>
+	<view class="flex warLists" wx:for="{{list}}">
+		<view class="imgCenter" style="width:25%;">
+			<image src="{{item.goodsImg}}" mode="aspectFit" lazy-load="true"/>
+		</view>
+		<view style="width:75%">
+			<view class="fz28 c343">{{item.goodsName}}</view>
+			<view wx:for="{{item.storageList}}" wx:for-item="goods">
+				<text class="state fz24 bcFF6 cfff" wx:if="{{goods.quantity < goods.warringStock}}">预警</text>
+				<text class="state fz24 bc3CC cfff" wx:if="{{goods.quantity >= goods.warringStock}}">正常</text>
+				<text class="fz26 c7B7">{{goods.storageName}}：</text>
+				<text class="fz26"><text class="cFF6">{{goods.quantity}}</text>件</text>
+				<text class="fz22 c7B7">（预警下限 {{goods.warringStock}}件）</text>
+			</view>
+			<view>
+				<text class="fz26 c7B7">总计：</text>
+				<text class="fz26">{{item.quantityTotal}}件</text>
+			</view>
+		</view>
+	</view>
+</template>
+<script>
+import wepy from 'wepy';
+export default class Warning extends wepy.component {
+  data = {
+  }
+  props = {
+		list: {
+			type: Array,
+			default: [],
+			twoWay: true,
+		},
+  }
+  methods = {
+
+  }
+	watch = {
+
+	}
+	onLoad(){
+
+	}
+}
+</script>

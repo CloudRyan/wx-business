@@ -1,0 +1,121 @@
+<style lang="less">
+.resInfo .info>view:not(:first-child) {
+  margin-bottom: 5rpx;
+}
+.resInfo .info>view:last-child {
+  margin-bottom: 0rpx;
+}
+.resInfo .resBtn {
+  width:136rpx;
+  height:48rpx;
+  line-height: 48rpx;
+  margin-right: 30rpx;
+  border-radius: 12rpx;
+}
+.trtite {
+  position: relative;
+  margin-top:20rpx;
+  border-bottom:1rpx solid #e9e9e9;
+}
+.trtite .flex>view{
+  width:33.33%;
+  height:88rpx;
+  line-height: 88rpx;
+  text-align: center;
+}
+.trtite .active {
+  color:#16B4BA;
+}
+.active-x {
+  width:33.33%;
+  height:4rpx;
+  background-color: #16B4BA;
+  position: absolute;
+  bottom:-1rpx;
+}
+.inventList {
+  padding:30rpx;
+}
+.inventList:not(:last-child) {
+  border-bottom:1rpx solid #e9e9e9;
+}
+.stateText {
+  margin-top:20rpx;
+  line-height: 60rpx;
+}
+.state {
+  width:60rpx;
+  height:60rpx;
+  line-height: 60rpx;
+  margin-right: 10rpx;
+  border-radius: 50%;
+}
+</style>
+<template>
+  <view class="resInfo flex bcfff" style="padding:20rpx 0rpx;" @tap="queryDetails">
+    <view class="imgCenter" style="width:30%;">
+      <image src="" style="width:168rpx;height:168rpx;border:1rpx solid #E5E5E5"/>
+    </view>
+    <view class="info c7B7 fz24" style="width:70%">
+      <view class="flex">
+        <view class="c343 fz28">福临门调和油  桶装*5L</view>
+        <view class="resBtn cfff fz24 tc {{attention?'bc3CC':'bcD7D'}}" @tap.stop="attentionClick">{{attention?'关注':'已关注'}}</view>
+      </view>
+      <view>**中心仓：<text class="c343">180 件</text></view>
+      <view>商家自有仓：<text class="c343">180 件</text></view>
+      <view>总计：<text class="c343">360 件</text></view>
+      <view class="flex"><view>库存金额：<text class="cFF6">￥2124.00</text></view><view class="c343" style="padding-right:30rpx;">￥76.00/件</view></view>
+    </view>
+  </view>
+  <view class="trtite bcfff c343 fz28">
+    <view class="flex">
+      <view @tap="seeclick({{$event}})" data-index="0" class="{{activeIndex==0&&'active'}}"><view>全部</view></view>
+      <view @tap="seeclick({{$event}})" data-index="1" class="{{activeIndex==1&&'active'}}"><view>入库</view></view>
+      <view @tap="seeclick({{$event}})" data-index="2" class="{{activeIndex==2&&'active'}}"><view>出库</view></view>
+    </view>
+    <view class="active-x" animation="{{animation}}"></view>
+  </view>
+  <view class="inventList bcfff" wx:for="{{[1,3,5]}}">
+    <view class="flex fz24 cb9b">
+      <text>2018-7-10 17:55</text>
+      <text>商家自有仓</text>
+    </view>
+    <view class="stateText flex fz28 c444">
+      <view><view class="state inline-block cfff tc {{index==1?'bcFFA':'bc3CC'}}" wx:if="{{activeIndex==0}}">{{index==1?'入':'出'}}</view>PX20418457465798465</view>
+      <text>-5</text>
+    </view>
+  </view>
+</template>
+<script>
+import wepy from 'wepy';
+import api from '../../utils/api';
+export default class inventoryQueryDetails extends wepy.page {
+  config = {
+    "navigationBarTitleText": "商品出入库详情",
+  }
+  data = {
+    attention:true,
+		activeIndex: 0,
+    animation: wepy.createAnimation({//动画
+      duration: 300,
+      timingFunction: 'linear'
+    }),
+  }
+	components = {
+  }
+  methods = {
+    seeclick(e){
+      this.activeIndex = e.currentTarget.dataset.index;
+      this.animation.translateX(e.target.offsetLeft).step();
+      this.setData({
+        animation:this.animation.export()
+      });
+    },
+    attentionClick(){
+      this.attention = this.attention ? false : true;
+    },
+  }
+  async onLoad(option) {
+  }
+}
+</script>

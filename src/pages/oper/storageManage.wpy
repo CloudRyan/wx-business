@@ -1,0 +1,162 @@
+<style lang="less">
+// @import '../../styles/style.less';
+.weui-search-bar {
+	position: relative;
+	padding: 6px 14px;
+	display: -webkit-box;
+	display: -webkit-flex;
+	display: flex;
+	box-sizing: border-box;
+	background-color: #16B4BA;
+}
+
+.weui-icon-search {
+	margin-right: 8px;
+	font-size: inherit
+}
+
+.weui-icon-search_in-box {
+	position: absolute;
+	left: 10px;
+	top: 8px
+}
+
+.weui-search-bar__text {
+	display: inline-block;
+	font-size: 14px;
+	vertical-align: middle;
+  margin-top:-4px;
+}
+
+.weui-search-bar__form {
+	position: relative;
+	-webkit-box-flex: 1;
+	-webkit-flex: auto;
+	flex: auto;
+	border-radius: 5px;
+	background: #fff;
+}
+
+.weui-search-bar__box {
+	position: relative;
+	padding-left: 30px;
+	padding-right: 30px;
+	width: 100%;
+	box-sizing: border-box;
+	z-index: 1
+}
+
+.weui-search-bar__input {
+	height: 32px;
+	line-height: 32px;
+	font-size: 14px
+}
+
+.weui-icon-clear {
+	position: absolute;
+	top: 0;
+	right: 0;
+	padding: 9px 8px;
+	font-size: 0
+}
+
+.weui-search-bar__label {
+	position: absolute;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	left: 0;
+	z-index: 2;
+	border-radius: 5px;
+	text-align: center;
+	color: #9b9b9b;
+	background: #FFFFFF;
+	line-height: 32px
+}
+
+.weui-search-bar__cancel-btn {
+	margin-left: 14px;
+	line-height: 32px;
+	color: #09bb07;
+	white-space: nowrap
+}
+.weui-search-bar__cancel-btn > image {
+  width: 16px;
+  height: 16px;
+}
+
+.searchbar-result {
+  margin-top: 0;
+  font-size: 14px;
+}
+.searchbar-result:before {
+  display: none;
+}
+.weui-cell{
+  padding: 12px 15px 12px 35px;
+}
+</style>
+<template>
+<view class="weui-search-bar">
+  <view class="weui-search-bar__form">
+    <view class="weui-search-bar__box">
+      <icon class="weui-icon-search_in-box" type="search" size="14"></icon>
+      <input type="text" class="weui-search-bar__input" placeholder="搜索" value="{{inputVal}}" focus="{{inputShowed}}" @input="inputTyping" />
+      <view class="weui-icon-clear" wx:if="{{inputVal.length > 0}}" @tap="clearInput">
+        <icon type="clear" size="14"></icon>
+      </view>
+    </view>
+    <label class="weui-search-bar__label" hidden="{{inputShowed}}" @tap="showInput">
+      <icon class="weui-icon-search" type="search" size="14"></icon>
+      <view class="weui-search-bar__text">搜索</view>
+    </label>
+  </view>
+  <view class="weui-search-bar__cancel-btn" hidden="{{!inputShowed}}" @tap="screenSelect">
+    <image src="../../images/oper/search-screen.png"></image>
+  </view>
+</view>
+<view class="weui-cells searchbar-result" wx:if="{{inputVal.length > 0}}">
+  <navigator url="" class="weui-cell" hover-class="weui-cell_active">
+    <view class="weui-cell__bd">
+      <view>实时搜索文本</view>
+    </view>
+  </navigator>
+</view>
+</template>
+<script>
+import wepy from 'wepy';
+import api from '../../utils/api';
+import util from '../../utils/util';
+export default class storageManage extends wepy.page {
+  config = {
+    "navigationBarTitleText": "入库管理",
+  }
+  data = {
+    screenShowed: false,
+    inputShowed: false,
+    inputVal: "",
+  }
+  components = {
+  }
+  methods = {
+    showInput: function () {
+        this.inputShowed = true;
+    },
+    hideInput: function () {
+        this.inputVal = "";
+        this.inputShowed = false;
+    },
+    clearInput: function () {
+        this.inputVal = "";
+    },
+    inputTyping: function (e) {
+        this.inputVal = e.detail.value;
+    },
+  }
+  events = {
+  }
+  onLoad() {
+
+  }
+}
+</script>

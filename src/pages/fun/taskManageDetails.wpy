@@ -1,0 +1,102 @@
+<style lang="less">
+.leftTitle {
+  padding:30rpx 0rpx 30rpx 30rpx;
+}
+.rightState image {
+  width:160rpx;
+  height:160rpx;
+  margin-top:30rpx;
+  margin-right:30rpx;
+}
+.leftTitle>view:not(:first-child) {
+  margin-top:10rpx;
+}
+.pers {
+  margin-top:20rpx;
+  padding:30rpx;
+}
+.pers image.userImg {
+  width:64rpx;
+  height:64rpx;
+  border-radius: 50%;
+}
+.pers .tiy {
+  margin-bottom:20rpx;
+}
+.pers .tiy>text {
+  margin-left:20rpx;
+}
+.pers .tName {
+  margin-left:20rpx;
+  position: relative;
+  top:-22rpx;
+}
+.pers image.face {
+  width:40rpx;
+  height:40rpx;
+}
+</style>
+<template>
+  <view class="flex bcfff">
+    <view class="leftTitle">
+      <view class="c444 fz36">{{taskInfo.taskTitle}}</view>
+      <view class="c7B7 fz26">{{taskInfo.taskContent}}</view>
+    </view>
+    <view class="rightState">
+      <image src="{{imgsrc}}"></image>
+    </view>
+  </view>
+  <view class="bcfff pers">
+    <view class="tiy c7B7 fz26">业务员</view>
+    <view><image class="userImg" src="../../images/fun/defaultAvatar.png"></image><text class="tName c444 fz28 inline-block">{{taskInfo.userName}}</text></view>
+  </view>
+  <view class="bcfff pers">
+    <view class="tiy c7B7 fz26">完成期限</view>
+    <view class="c444 fz26">{{taskInfo.createDateStr}} 至 {{taskInfo.endDateStr}}</view>
+  </view>
+  <view class="bcfff pers">
+    <view class="tiy c7B7 fz26">任务进度<text class="cb9b fz24">(共{{taskInfo.taskDetails.length}}家门店已完成{{homes}}家)</text></view>
+    <view class="flex" style="margin-top:30rpx;" wx:for="{{taskInfo.taskDetails}}">
+      <view style="width:10%;"><image class="face" src="../../images/fun/{{item.status==1?'face_1':'face_2'}}.png"></image></view>
+      <view class="recordOf" style="width:75%;">
+        <view class="c444 fz28">{{item.shopName}}</view>
+        <view class="c7B7 fz24">{{item.createDate}}</view>
+      </view>
+      <view class="fz24 tr {{item.status==1?'c3CC':'cFF6'}}" style="width:15%;">{{item.status==1?'已执行':'未执行'}}</view>
+    </view>
+  </view>
+</template>
+<script>
+import wepy from 'wepy';
+// import api from '../../utils/api';
+export default class taskManage extends wepy.page {
+  config = {
+    "navigationBarTitleText": "任务详情",
+  }
+  data = {
+    taskInfo:'',
+    imgsrc:'',
+    homes:0,
+  }
+  components = {
+  }
+  methods = {
+  }
+  events = {
+  }
+	async onLoad(option){
+    const statusText = Array('details_for','details_complete','details_overdue');
+    this.taskInfo = JSON.parse(option.taskInfo);
+    this.imgsrc = '../../images/fun/'+statusText[this.taskInfo.status]+'.png';
+    this.taskInfo.taskDetails = this.taskInfo.taskDetails.map((item)=>{
+      let mydate = new Date(item.createDate);
+      item.createDate = mydate.getFullYear()+'-'+(mydate.getMonth()+1)+'-'+mydate.getDate();
+      if(item.status==1){
+        this.homes++;
+      }
+      return item;
+    });
+    console.log(this.taskInfo);
+  }
+}
+</script>

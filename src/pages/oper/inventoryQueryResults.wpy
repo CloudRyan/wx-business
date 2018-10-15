@@ -1,0 +1,232 @@
+<style lang="less">
+.resInfo:not(:last-child) {
+  // border-bottom:1rpx solid #E5E5E5;
+}
+.resInfo .info>view:not(:first-child) {
+  margin-bottom: 5rpx;
+}
+.resInfo .info>view:last-child {
+  margin-bottom: 0rpx;
+}
+.resInfo .resBtn {
+  width:136rpx;
+  height:48rpx;
+  line-height: 48rpx;
+  margin-right: 30rpx;
+  border-radius: 12rpx;
+}
+.sanx {
+  width:0;
+  height:0;
+  border-left:15rpx solid transparent;
+  border-right:15rpx solid transparent;
+  border-bottom:15rpx solid #16B4BA;
+}
+.list {
+  margin: 20rpx;
+}
+.list>view {
+  background-color: #FFFFFF;
+  border-top:1rpx solid #e5e5e5;
+}
+.list>view:first-child {
+  text-indent: 15rpx;
+}
+.list>view:last-child {
+  border-bottom:1rpx solid #e5e5e5;
+}
+.list>view>view {
+  width: 20%;
+  padding:10rpx 0rpx;
+  display:flex;
+  display: -webkit-flex;
+  align-items:center;
+  border-left:1rpx solid #e5e5e5;
+}
+.list>view>view:last-child {
+  border-right:1rpx solid #e5e5e5;
+}
+</style>
+<template>
+  <view class="fz24 c7B7 bcf3f" style="padding:20rpx;" wx:if="{{query && list.length}}">为您搜索到 <text class="cFF6">{{total}}</text> 个与 "{{query}}" 相关的产品</view>
+  <view style="border-bottom:1rpx solid #E5E5E5;" wx:for="{{list}}" data-index="{{index}}" @tap="queryDetails({{$event}})">
+    <view class="resInfo flex bcfff" style="padding:20rpx 0rpx;">
+      <view class="imgCenter" style="width:30%;">
+        <image src="{{item.main_img_url}}" lazy-load="true" style="width:168rpx;height:168rpx;border:1rpx solid #E5E5E5"/>
+      </view>
+      <view class="info c7B7 fz24" style="width:70%">
+        <view class="flex">
+          <view class="c343 fz28">{{item.goodsName}}</view>
+          <!-- <view class="resBtn cfff fz24 tc {{item.attention?'bc3CC':'bcD7D'}}" @tap.stop="attentionClick({{index}})">{{item.attention?'关注':'已关注'}}</view> -->
+        </view>
+        <repeat for="{{item.titleList}}" key="index" index="index" item="itemsku">
+          <view>{{itemsku.storageName}}：<text class="c343">{{itemsku.stock}} {{item.unit_name}}</text></view>
+        </repeat>
+        <view>总计：<text class="c343">{{item.amount||0}} {{item.unit_name}}</text></view>
+        <view class="flex">
+          <view>库存金额：
+            <text class="c343">￥{{item.totalPrice||0}}</text>
+          </view>
+          <view class="c3CC" style="padding-right:30rpx;">{{item.hidden?'展开详情':'收起详情'}} <view class="sanx right" style="margin-top:12rpx;margin-left:7rpx;{{item.hidden&&'transform:rotate(180deg)'}}"></view></view>
+          <!-- <view class="c343" style="padding-right:30rpx;">￥76.00/件</view> -->
+        </view>
+      </view>
+      <!-- <view class="info c7B7 fz24" style="width:70%">
+        <view class="flex">
+          <view class="c343 fz28">{{item.goodsName}}</view>
+          <view class="resBtn cfff fz24 tc {{item.attention?'bc3CC':'bcD7D'}}" @tap.stop="attentionClick({{index}})">{{item.attention?'关注':'已关注'}}</view>
+        </view>
+        <repeat for="{{item.skuList}}" key="index" index="index" item="itemsku">
+          <view>{{itemsku.skuName}}：<text class="c343">{{itemsku.salePrice}} 件</text></view>
+        </repeat>
+        <view>总计：<text class="c343">360 件</text></view>
+        <view class="flex"><view>库存金额：<text class="c343">￥2124.00</text></view><view class="c343" style="padding-right:30rpx;">￥76.00/件</view></view>
+      </view> -->
+    </view>
+    <view class="list" hidden="{{item.hidden}}">
+      <view class="flex c7B7 fz24">
+        <view>规格名称</view>
+        <view>总库存</view>
+        <repeat for="{{item.titleList}}" item="items">
+          <view>{{items.storageName}}</view>
+        </repeat>
+        <view>销售价</view>
+        <view>库存金额</view>
+      </view>
+      <repeat for="{{item.skuList}}" item="itemsku">
+        <view class="flex c444 fz24">
+          <view class="c3CC">{{itemsku.skuName}}{{itemsku.unitName && '/'+itemsku.unitName}}</view>
+          <view>{{itemsku.totalStock}}</view>
+          <repeat for="{{item.titleList}}" index="index" item="items">
+            <view>{{items.storageNo==itemsku.storageList[index].storageNo?itemsku.storageList[index].stock:''}}</view>
+          </repeat>
+          <view>￥{{itemsku.salePrice}}</view>
+          <view>￥{{itemsku.totalPrice}}</view>
+        </view>
+      </repeat>
+    </view>
+  </view>
+  <view class="cb9b fz20 tc">
+    <view wx-if="{{loadInfo==1}}">加载中...</view>
+    <view wx-if="{{loadInfo==2}}">—— 我是有底线的 ——</view>
+    <view wx-if="{{loadInfo==3}}" style="padding:50rpx 0rpx">—— 暂无数据 ——</view>
+  </view>
+</template>
+<script>
+import wepy from 'wepy';
+import api from '../../utils/api';
+export default class inventoryQueryResults extends wepy.page {
+  config = {
+    "navigationBarTitleText": "库存查询",
+    "onReachBottomDistance": 50
+  }
+  data = {
+    loadInfo:0,
+    query:'',
+    total:'',
+    params:{
+      pageNo:1,
+      pageSize:8,
+    },
+    list:[],
+  }
+	components = {
+  }
+  methods = {
+    attentionClick(index){
+      this.list[index].attention = this.list[index].attention ? false : true;
+    },
+    queryDetails(e){
+      // this.$navigate('inventoryQueryDetails');
+      this.list[e.currentTarget.dataset.index].hidden = this.list[e.currentTarget.dataset.index].hidden == true ? false : true;
+    }
+  }
+  onLoad(option) {
+    if(option.type){
+      if(option.type){
+        wepy.setNavigationBarTitle({
+          title: '库存商品'
+        });
+      }else{
+        wepy.setNavigationBarTitle({
+          title: '我关注的'
+        });
+      }
+    }else{
+      const that = this;
+      this.query = option.query;
+      wepy.setNavigationBarTitle({
+        title: '查询结果'
+      });
+      this.params.goodsName = this.query;
+      this.findStockInfoList();
+    }
+  }
+  onReachBottom () {
+    let that = this;
+    if(that.loadInfo == 0){
+      that.params.pageNo++;
+      that.findStockInfoList(data=>{
+        that.list = that.list.concat(data);
+      });
+    }
+  }
+  findStockInfoList(backFun){
+    let that = this;
+    that.loadInfo = 1;
+    api.findStockInfoList({
+      query:this.params
+    },data=>{
+      that.strlist(data.data);
+      if(backFun){
+        backFun(data.data);
+      }else{
+        that.list = data.data;
+        that.total = data.total;
+      }
+      if(data.data.length == that.params.pageSize || that.params.pageNo == 1){
+        that.loadInfo = 0;
+        if(that.list.length == 0){
+          that.loadInfo = 3;
+        }
+      }else{
+        that.loadInfo = 2;
+      }
+      that.$apply();
+    });
+  }
+  strlist(list){
+    list.forEach(items=>{
+      let titleList = [];
+      items.hidden = true;
+      items.skuList.forEach(items=>{
+        items.storageList.forEach(items=>{
+          if(titleList.findIndex((value, index, arr)=>value.storageNo == items.storageNo) == -1){
+            titleList.push(items);
+          }
+        })
+      });
+      items.titleList = titleList;
+      if(titleList && titleList.length>1){
+        items.amount = titleList.reduce((prev,next)=>{
+          return prev.stock + next.stock;
+        });
+      }else if(titleList.length == 1){
+        items.amount = titleList[0].stock;
+      }
+      if(items.skuList && items.skuList.length > 1){
+        items.totalPrice = items.skuList.reduce((prev,next,index)=>{
+          if(index != 1){
+            return prev + parseFloat(next.totalPrice);
+          }else{
+            return parseFloat(prev.totalPrice) + parseFloat(next.totalPrice);
+          }
+        })
+      }else if(items.skuList.length == 1) {
+        items.totalPrice = items.skuList[0].totalPrice;
+      }
+    });
+    return list;
+  }
+}
+</script>

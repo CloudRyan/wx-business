@@ -1,0 +1,269 @@
+<style lang="less">
+.container {
+  margin-top: 20rpx;
+}
+.detaTie {
+  padding: 30rpx;
+}
+.detab {
+  width:15%;
+}
+.detab image{
+  width:32rpx;
+  height:32rpx;
+}
+.border {
+  position: absolute;
+  bottom:0rpx;
+  width: 100%;
+  margin-left: -30rpx;
+  height: 5rpx;
+}
+.detaInfo {
+  width: 85%;
+  padding-left:30rpx;
+}
+.detaInfo>view:not(:last-child) {
+  margin-bottom: 15rpx;
+}
+.state_img {
+  width:120rpx;
+  height:120rpx;
+  position: absolute;
+  right: 30rpx;
+  top: -30rpx;
+}
+.conTie {
+  height: 70rpx;
+  line-height: 70rpx;
+  padding: 0rpx 30rpx;
+  border-bottom: 1rpx solid #E5E5E5;
+}
+.conTieList {
+  // padding: 30rpx;
+  .detaTie;
+  border-bottom: 1rpx solid #E5E5E5;
+}
+.conTieList .leftImg {
+  width: 25%;
+  margin-right: 30rpx;
+  border: 1rpx solid #E5E5E5;
+  overflow: hidden;
+}
+.conTieList .leftImg image {
+  width: 100rpx;
+  height: 100rpx;
+}
+.conTieList .through {
+  margin-left: 20rpx;
+  text-decoration:line-through;
+}
+.conTieList .rightInfo {
+  width: 75%;
+}
+.conTieList .rightInfo>view:not(:last-child) {
+  margin-bottom: 10rpx;
+}
+.conTieList .state_name {
+  height: 60rpx;
+  width: 180rpx;
+  line-height: 80rpx;
+  text-align: center;
+  position: absolute;
+  top:-10rpx;
+  left:-70rpx;
+  transform:rotate(-45deg);
+}
+.conTot {
+  height: 90rpx;
+  line-height: 90rpx;
+  margin-left: 30rpx;
+  padding-right: 30rpx;
+}
+.conTot:not(:last-child) {
+  border-bottom: 1rpx solid #E5E5E5;
+}
+.orderData {
+  // padding: 30rpx;
+  .detaTie;
+}
+.orderData>view:not(:last-child) {
+  margin-bottom: 20rpx;
+}
+.orderData>view>text:first-child {
+  width:140rpx;
+  // margin-right: 20rpx;
+}
+</style>
+<template>
+  <view class="flex bcfff relative detaTie">
+    <view class="detab imgCenter">
+      <image src="../../images/fun/detab.png"/>
+    </view>
+    <view class="detaInfo">
+      <view class="c444 fz28" style="width:75%;">{{orderInfo.shopName}}</view>
+      <view class="c7B7 fz26">
+        <view><text>收货人：{{orderInfo.buyerLogisticsContact}}</text><text style="margin-left:50rpx">{{orderInfo.buyerLogisticsTel}}</text></view>
+      </view>
+      <view class="c7B7 fz26">{{orderInfo.buyerLogisticsAddress}}</view>
+    </view>
+    <image class="state_img" src="../../images/fun/order_state1.png" wx:if="{{orderInfo.status == 3}}"></image>
+    <image class="state_img" src="../../images/fun/order_state2.png" wx:if="{{orderInfo.status == 6}}"></image>
+    <image class="state_img" src="../../images/fun/order_state3.png" wx:if="{{orderInfo.status == 4}}"></image>
+    <image class="state_img" src="../../images/fun/order_state4.png" wx:if="{{orderInfo.status == 5}}"></image>
+    <image class="border" src="../../images/fun/border-bottom.png"></image>
+  </view>
+  <!-- <view class="container bcfff">
+    <view class="fz26 conTie"><text class="c444">产品清单</text><text class="c7B7 right">深圳中心仓</text></view>
+    <view class="conTieList flex">
+      <view class="leftImg imgCenter"><image></image></view>
+      <view class="rightInfo">
+        <view class="c444 fz28">康倍宝原色经典抽纸婴儿纸巾卫生纸餐巾纸面巾纸24包整箱</view>
+        <view class="c7B7 fz26">24包/箱</view>
+        <view class="fz26"><text class="cFC6">￥<text class="fz28">49.00</text></text><text class="right">x1</text></view>
+      </view>
+    </view>
+    <view class="conTieList flex">
+      <view class="leftImg imgCenter"><image></image></view>
+      <view class="rightInfo">
+        <view class="c444 fz28">康倍宝原色经典抽纸婴儿纸巾卫生纸餐巾纸面巾纸24包整箱</view>
+        <view class="c7B7 fz26">1000g</view>
+        <view class="bcFC6 cfff fz24 inline-block" style="padding:5rpx 15rpx;border-radius:4rpx;">限时折扣</view>
+        <view class="fz26"><text class="cFC6">￥<text class="fz28">49.00</text></text><text class="fz24 c7B7 through">￥13.00</text><text class="right">x1</text></view>
+      </view>
+    </view>
+  </view> -->
+  <!-- <view class="container bcfff">
+    <view class="fz26 conTie">
+      <view class="bcFC6 cfff fz26 inline-block" style="width:80rpx;height:36rpx;line-height:36rpx;text-align: center;border-radius:4rpx;margin-right:20rpx;">满减</view>
+      <text class="c444">已享“满300减45元”</text>
+    </view>
+    <view class="conTieList flex">
+      <view class="leftImg imgCenter"><image></image></view>
+      <view class="rightInfo">
+        <view class="c444 fz28">康倍宝原色经典抽纸婴儿纸巾卫生纸餐巾纸面巾纸24包整箱</view>
+        <view class="c7B7 fz26">1000g</view>
+        <view class="fz26">
+          <text class="cFC6">￥<text class="fz28">49.00</text></text>
+          <text class="fz24 c7B7 through">￥13.00</text>
+          <text class="right">x1</text>
+        </view>
+      </view>
+    </view>
+    <view class="conTieList flex">
+      <view class="leftImg imgCenter"><image></image></view>
+      <view class="rightInfo">
+        <view class="c444 fz28">康倍宝原色经典抽纸婴儿纸巾卫生纸餐巾纸面巾纸24包整箱</view>
+        <view class="c7B7 fz26">24包/箱</view>
+        <view class="fz26"><text class="cFC6">￥<text class="fz28">49.00</text></text><text class="right">x1</text></view>
+      </view>
+    </view>
+  </view> -->
+  <!-- <view class="container bcfff">
+    <view class="fz26 conTie">
+      <text class="c444">优惠套餐1</text>
+    </view>
+    <view class="conTieList flex">
+      <view class="leftImg imgCenter relative">
+        <view class="state_name bcFC6 fz22 cfff">套餐</view>
+        <image></image>
+      </view>
+      <view class="rightInfo">
+        <view class="c444 fz28">石磨玉米面粉</view>
+        <view class="c7B7 fz26">180g</view>
+        <view class="fz26">
+          <text class="cFC6">￥<text class="fz28">49.00</text></text>
+          <text class="fz24 c7B7 through">￥13.00</text>
+          <text class="right">x2</text>
+        </view>
+      </view>
+    </view>
+    <view class="conTieList flex">
+      <view class="leftImg imgCenter relative">
+        <view class="state_name bcFFA fz22 cfff">赠品</view>
+        <image></image>
+      </view>
+      <view class="rightInfo">
+        <view class="c444 fz28">沁丰园沙琪玛</view>
+        <view class="c7B7 fz26">1000g</view>
+        <view class="fz26"><text class="cFC6">￥<text class="fz28">49.00</text></text><text class="right">x1</text></view>
+      </view>
+    </view>
+  </view> -->
+  <view class="container bcfff">
+    <view class="fz26 conTie"><text class="c444">产品清单</text><text class="c7B7 right">{{orderInfo.warehouseCode}}</text></view>
+
+    <view class="conTieList flex" wx:for="{{orderInfo.goodsInfos}}">
+      <view class="leftImg imgCenter"><image src="{{item.goodsImg}}"></image></view>
+      <view class="rightInfo">
+        <view class="c444 fz28">{{item.goodsName}}</view>
+        <view class="c7B7 fz26">{{item.skuMsg||''}}</view>
+        <!-- <view class="fz26">
+          <text class="cFC6">￥<text class="fz28">{{item.actualPayAmount}}</text>
+          </text><text class="right">x{{item.number}}</text>
+        </view> -->
+        <view class="fz26">
+          <text class="cFC6">￥<text class="fz28">{{item.unitPrice}}</text></text>
+          <!-- <text class="fz24 c7B7 through">￥{{item.salesPrice}}</text> -->
+          <text class="right">x{{item.number}}</text>
+        </view>
+      </view>
+    </view>
+    <!-- <view class="conTieList flex">
+      <view class="leftImg imgCenter"><image></image></view>
+      <view class="rightInfo">
+        <view class="c444 fz28">康倍宝原色经典抽纸婴儿纸巾卫生纸餐巾纸面巾纸24包整箱</view>
+        <view class="c7B7 fz26">1000g</view>
+        <view class="bcFC6 cfff fz24 inline-block" style="padding:5rpx 15rpx;border-radius:4rpx;">限时折扣</view>
+        <view class="fz26"><text class="cFC6">￥<text class="fz28">49.00</text></text><text class="fz24 c7B7 through">￥13.00</text><text class="right">x1</text></view>
+      </view>
+    </view> -->
+  </view>
+  <view class="container bcfff">
+    <view class="fz28 conTot"><text class="c444">商品金额</text><text class="c7B7 right">￥{{orderInfo.shouldAmount}}</text></view>
+    <view class="fz28 conTot"><text class="c444">商品数量</text><text class="c7B7 right">{{orderInfo.totalNumber}}</text></view>
+    <view class="fz28 conTot"><text class="c444">优惠金额</text><text class="cFF6 right">-￥{{orderInfo.couponAmount}}</text></view>
+    <view class="fz28 conTot"><text class="cFF6 right"><text class="c444">应收金额：</text>￥{{orderInfo.actualAmount}}</text></view>
+  </view>
+  <view class="container bcfff orderData fz26">
+    <view><text class="c7B7 inline-block">订单编号：</text><text class="c444">{{orderInfo.orderNo}}</text></view>
+    <view><text class="c7B7 inline-block">下单时间：</text><text class="c444">{{orderInfo.createTime}}</text></view>
+    <view><text class="c7B7 inline-block">结算方式：</text><text class="c444">{{orderInfo.payType}}</text></view>
+    <view><text class="c7B7 inline-block">配送方式：</text><text class="c444">{{orderInfo.receiveTypeText}}</text></view>
+    <view><text class="c7B7 inline-block">业务员：</text><text class="c444">{{orderInfo.salemanName}}</text></view>
+    <view><text class="c7B7 inline-block">发货时间：</text><text class="c444">{{orderInfo.sendTime}}</text></view>
+  </view>
+  <view class="container bcfff fz28 detaTie"wx:if="{{orderInfo.buyersRemark}}">
+    <view class="c717">备注：</view>
+    <view class="c444 container">{{orderInfo.buyersRemark}}</view>
+  </view>
+</template>
+<script>
+import wepy from 'wepy';
+import {getOrderInfo} from '../../utils/api';
+export default class salesOrder extends wepy.page {
+  config = {
+    "navigationBarTitleText": "订单详情",
+  }
+  data = {
+    orderInfo:'',
+  }
+  methods = {
+  }
+  events = {
+  }
+  async onLoad(option) {
+    const that = this;
+    getOrderInfo({
+      query:{
+        orderId:option.id
+      }
+    },data=>{
+      console.log(data.data);
+      that.orderInfo = data.data;
+      // that.orderInfo.createTime = new Date(that.orderInfo.createTime).toLocaleString();
+      that.$apply();
+    });
+  }
+}
+</script>

@@ -1,0 +1,303 @@
+<style lang="less">
+.container {
+  position: fixed;
+  left: 0rpx;
+  right: 0rpx;
+  top: 0rpx;
+  z-index: 1;
+  border-bottom: 1rpx solid #f3f4f7
+  // box-shadow: 0px 5px 5px #E5E5E5;
+}
+.trtite {
+  width:75%;
+  position: relative;
+  left:5%;
+}
+.trtite .flex>view{
+  width:130rpx;
+  height:88rpx;
+  line-height: 88rpx;
+  text-align: center;
+}
+.trtite .active {
+  color:#16B4BA;
+}
+.active-x {
+  width:130rpx;
+  height:4rpx;
+  background-color: #16B4BA;
+  position: absolute;
+  bottom:-1rpx;
+}
+.filterBtn {
+  width:15%;
+  text-align:center;
+}
+.filterBtn>view {
+  height: 50%;
+  margin-top:20%;
+  border-left:1rpx solid #E5E5E5;
+}
+.filterBtn image{
+  width:29rpx;
+  height:31rpx;
+  margin-top: 7rpx;
+}
+.trList {
+  margin-top:20rpx;
+}
+.trList> view{
+  margin-bottom:20rpx;
+  padding-left:30rpx;
+}
+.trList .trTe {
+  height: 70rpx;
+  line-height: 70rpx;
+}
+.trList .trTe {
+  border-bottom: 1rpx solid #E5E5E5;
+  padding-right: 30rpx;
+}
+.trList .relative{
+  padding:20rpx 0rpx;
+}
+.trList .relative .fz24 view{
+  margin-bottom:10rpx;
+}
+.trList .trPos {
+  position: absolute;
+  right:-80rpx;
+  bottom:45rpx;
+  width:300rpx;
+  height:50rpx;
+  line-height: 50rpx;
+  transform:rotate(-45deg);
+  letter-spacing:2px;
+}
+.screening {
+  z-index: 2;
+  position: fixed;
+  top:80rpx;
+  right: 10rpx;
+  border:1rpx solid #E5E5E5;
+  border-bottom:0rpx;
+	box-shadow:0rpx 0rpx 5rpx #DDD;
+}
+.screening .scrList view{
+  height:80rpx;
+  line-height: 80rpx;
+  padding:0rpx 50rpx;
+  border-bottom:1rpx solid #E5E5E5;
+}
+.screening .scrSider{
+  width: 0rpx;
+  height: 0rpx;
+  border-bottom: 20rpx solid #E5E5E5;
+  border-right: 20rpx solid transparent;
+  border-left: 20rpx solid transparent;
+  position: absolute;
+  top:-20rpx;
+  right:25rpx;
+}
+.screening .scrSider view{
+  width: 0rpx;
+  height: 0rpx;
+  border-bottom: 20rpx solid #FFFFFF;
+  border-right: 20rpx solid transparent;
+  border-left: 20rpx solid transparent;
+  position: absolute;
+  right:-20rpx;
+  top:1rpx;
+}
+</style>
+<template>
+  <view @tap="tooClickHide">
+    <view style="height:88rpx;">
+      <view class="container bcfff flex c7B7 fz24">
+        <view class="trtite">
+          <view class="flex">
+            <view @tap.stop="seeclick({{$event}})" data-index="0" class="{{activeIndex==0&&'active'}}"><view>待审批</view></view>
+            <view @tap.stop="seeclick({{$event}})" data-index="1" class="{{activeIndex==1&&'active'}}"><view>已审批</view></view>
+            <view @tap.stop="seeclick({{$event}})" data-index="2" class="{{activeIndex==2&&'active'}}"><view>已驳回</view></view>
+          </view>
+          <view class="active-x" animation="{{animation}}"></view>
+        </view>
+        <view class="filterBtn" @tap.stop="filterShow"><view><image src="../images/oper/{{scrHide==false?'filter_active':'filter'}}.png"></image></view></view>
+      </view>
+    </view>
+    <view class="screening bcfff" hidden="{{scrHide}}">
+      <view class="scrSider">
+        <view></view>
+      </view>
+      <view class="scrList fz24 c444 tc">
+        <view wx:for="{{channel}}" @tap.stop="channelClick({{item}})" class="{{chs.type===item.type&&'bc3CC cfff'}}">{{item.name}}</view>
+      </view>
+    </view>
+    <view class="trList">
+      <view class="bcfff" wx:for="{{trlist}}" @tap="seeDetails({{item}})">
+        <view class="trTe">
+          <view class="inline-block c343 fz28 h1ddd" style="width:300rpx;">{{item.shopName}}</view>
+          <view class="right c7B7 fz24">{{item.createDate}}</view>
+        </view>
+        <view class="relative ove-h">
+          <view class="fz24" wx:if="{{item.dealType == '收款上报'}}">
+            <view><text class="c7B7">收款单号：</text><text class="c444">{{item.flowNo}}</text></view>
+            <view><text class="c7B7">收款金额：</text><text class="c444">￥{{item.amount}}</text></view>
+            <view><text class="c7B7">收款备注：</text><text class="c444">{{item.reason}}</text></view>
+            <view><text class="c7B7">业务人员：</text><text class="c444">{{item.userName}}</text></view>
+          </view>
+          <view class="fz24" wx:if="{{item.dealType == '售后退货'}}">
+            <view><text class="c7B7">售后单号：</text><text class="c444">{{item.flowNo}}</text></view>
+            <view><text class="c7B7">申请金额：</text><text class="c444">￥{{item.amount}}</text></view>
+            <view><text class="c7B7">售后原因：</text><text class="c444">{{item.reason}}</text></view>
+            <view><text class="c7B7">业务人员：</text><text class="c444">{{item.userName}}</text></view>
+          </view>
+          <view class="fz24" wx:if="{{item.dealType == '售后换货'}}">
+            <view><text class="c7B7">换货单号：</text><text class="c444">{{item.flowNo}}</text></view>
+            <view><text class="c7B7">换货总数：</text><text class="c444">{{item.goodsNumber}}</text></view>
+            <view><text class="c7B7">售后原因：</text><text class="c444">{{item.reason}}</text></view>
+            <view><text class="c7B7">业务人员：</text><text class="c444">{{item.userName}}</text></view>
+          </view>
+          <view class="trPos fz28 bc29C cfff tc" wx:if="{{item.dealType == '收款上报'}}">收款上报</view>
+          <view class="trPos fz28 bcF17 cfff tc" wx:if="{{item.dealType == '售后退货'}}">售后退货</view>
+          <view class="trPos fz28 bcF7B cfff tc" wx:if="{{item.dealType == '售后换货'}}">售后换货</view>
+          <!-- <view class="trPos fz28 bc29C cfff tc" wx:if="{{chs.type === 2}}">{{item.dealType}}</view>
+          <view class="trPos fz28 bcF17 cfff tc" wx:if="{{chs.type === 1}}">{{item.dealType}}</view>
+          <view class="trPos fz28 bcF7B cfff tc" wx:if="{{chs.type === 0}}">{{item.dealType}}</view> -->
+        </view>
+      </view>
+      <view class="cb9b fz20 tc">
+        <view wx-if="{{loadInfo==1}}">加载中...</view>
+        <view wx-if="{{loadInfo==2}}">—— 我是有底线的 ——</view>
+        <view wx-if="{{loadInfo==3}}" style="padding:50rpx 0rpx">—— 暂无数据 ——</view>
+      </view>
+    </view>
+  </view>
+</template>
+<script>
+import wepy from 'wepy';
+import api from '../utils/api';
+export default class trial extends wepy.page {
+  config = {
+    "navigationBarTitleText": "审批管理",
+    "onReachBottomDistance": 50
+  }
+  data = {
+    loadInfo: 0,
+    activeIndex: 0,
+    animation: wepy.createAnimation({//动画
+      duration: 300,
+      timingFunction: 'linear'
+    }),
+    scrHide:true,
+    // channel:[{name:'全部',type:''},{name:'收款上报',type:1},{name:'售后退货',type:2},{name:'售后换货',type:3}],
+    channel:[{name:'全部',type:''},{name:'收款上报',type:2},{name:'售后退货',type:1},{name:'售后换货',type:0}],
+    chs:{type:''},
+    iphone: wepy.getSystemInfoSync(),
+    trlist:[],
+    params:{page:1,rows:5}
+  }
+  components = {
+  }
+  methods = {
+    seeclick(e){
+      this.scrHide = true;
+      this.activeIndex = e.currentTarget.dataset.index;
+      this.animation.translateX(e.target.offsetLeft).step();
+      this.setData({
+        animation:this.animation.export()
+      });
+      wepy.removeStorageSync('refresh-trial');
+      this.onShow();
+    },
+    filterShow(){
+      this.scrHide = false;
+    },
+    channelClick(cname){
+      this.scrHide = true;
+      this.chs = cname;
+      wepy.removeStorageSync('refresh-trial');
+      this.onShow();
+    },
+    tooClickHide(){
+      this.scrHide = true;
+    },
+    seeDetails(item){
+      let opType;
+      if(item.dealType == '收款上报'){
+        opType = 1;
+      }else if(item.dealType == '售后退货'){
+        opType = 2;
+      }else if(item.dealType == '售后换货'){
+        opType = 3;
+      }
+      wepy.navigateTo({
+        url: 'trialDetails?activeIndex='+this.activeIndex+'&type='+opType+'&id='+item.id
+      })
+    }
+  }
+  events = {
+    'refresh-trial': (newVal,oldVal) => {
+      console.error(newVal,oldVal);
+    }
+  }
+  onShow() {
+    if(!wepy.getStorageSync('refresh-trial')){
+      this.params.page = 1;
+      this.trlist = [];
+      this.getLiteApproachList();
+    }
+  }
+  onLoad(){
+    wepy.removeStorageSync('refresh-trial');
+  }
+  getLiteApproachList(backFun){
+    let that = this;
+    that.params.dealType = that.chs.type;
+    that.params.status = that.activeIndex;
+    /*
+    zdy状态在2018.9.14修改
+     */
+    // if(that.activeIndex == 0){//待审批
+    //   that.params.status = 0;
+    //   that.params.approvalPass = '';
+    // }else if(that.activeIndex == 1){//已审批
+    //   that.params.status = 1;
+    //   that.params.approvalPass = 1;
+    // }else if(that.activeIndex == 2){//已驳回
+    //   that.params.status = 1;
+    //   that.params.approvalPass = 0;
+    // }
+
+    that.loadInfo = 1;
+    console.log(that.params);
+    api.getLiteApproachList({
+      query: that.params
+    },data=>{
+      if(backFun){
+        backFun(data.data);
+      }else{
+        that.trlist = data.data;
+      }
+      if(data.data.length == that.params.rows || that.params.page == 1){
+        that.loadInfo = 0;
+        if(that.trlist.length == 0){
+          that.loadInfo = 3;
+        }
+      }else{
+        that.loadInfo = 2;
+      }
+      that.$apply();
+    });
+  }
+  onReachBottom () {
+    let that = this;
+    if(that.loadInfo == 0){
+      that.params.page++;
+      that.getLiteApproachList(function(data){
+        that.trlist = that.trlist.concat(data);
+      });
+    }
+  }
+}
+</script>

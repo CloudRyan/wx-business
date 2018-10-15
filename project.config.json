@@ -1,0 +1,17 @@
+{
+	"description": "小程序",
+	"setting": {
+		"urlCheck": false,
+		"es6": false,
+		"postcss": false,
+		"minified": false,
+		"newFeature": true,
+		"nodeModules": false
+	},
+	"compileType": "miniprogram",
+	"appid": "wx7e735639b6305a28",
+	"projectname": "business",
+	"miniprogramRoot": "dist/",
+	"libVersion": "1.9.97",
+	"condition": {}
+}

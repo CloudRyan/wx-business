@@ -1,0 +1,82 @@
+<style lang="less">
+.perl {
+  padding-left: 30rpx;
+  background-color: #FFFFFF;
+}
+.perl>view{
+  padding: 30rpx 30rpx 30rpx 0rpx;
+  border-bottom:1rpx solid #e5e5e5;
+}
+.perl>view:last-child{
+  border-bottom: 0rpx;
+}
+.perl>view>view{
+  display: inline-block;
+}
+.perl>view>view.right {
+}
+.perl view image {
+  width: 88rpx;
+  height: 88rpx;
+  border-radius: 50%;
+}
+</style>
+<template>
+  <view class="perl fz28">
+    <view style="height:88rpx;">
+      <view class="c444" style="line-height:88rpx;">头像</view>
+      <image class="right" src="{{userInfo.avatarUrl}}"></image>
+    </view>
+    <view>
+      <view class="c444">账号</view>
+      <view class="right c7B7">{{dataInfo.account}}</view>
+    </view>
+    <view>
+      <view class="c444">姓名</view>
+      <view class="right c7B7">{{dataInfo.showContact}}</view>
+    </view>
+    <view>
+      <view class="c444">手机</view>
+      <view class="right c7B7">{{dataInfo.telPhone}}</view>
+    </view>
+  </view>
+</template>
+<script>
+import wepy from 'wepy';
+import api from '../utils/api';
+export default class personal extends wepy.page {
+  config = {
+    "navigationBarTitleText": "个人资料",
+    // enablePullDownRefresh : true,
+  }
+  data = {
+    dataInfo:wepy.getStorageSync('suppInfo'),
+    userInfo:wepy.getStorageSync('userInfo'),
+  }
+  components = {
+  }
+  methods = {
+  }
+  events = {
+  }
+  onReady(){
+  }
+  onLoad(data) {
+    if(data.news){
+      let that = this;
+      api.getSupplierLite(res=>{
+        wepy.setStorageSync('suppInfo', that.dataInfo = res.data);
+        if(data.news){
+          wepy.stopPullDownRefresh();
+          wepy.hideNavigationBarLoading();
+        }
+        that.$apply();
+      });
+    }
+  }
+  // onPullDownRefresh() {
+  //   wepy.showNavigationBarLoading();
+  //   this.onLoad({news:true});
+  // }
+}
+</script>

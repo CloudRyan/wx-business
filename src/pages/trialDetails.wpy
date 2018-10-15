@@ -1,0 +1,339 @@
+<style lang="less">
+.infor {
+  padding:25rpx 28rpx 25rpx 28rpx;
+  margin-bottom:20rpx;
+}
+.posImg {
+  width:140rpx;
+  height:140rpx;
+  position: absolute;
+  right:20rpx;
+  top:20rpx;
+  z-index: 1;
+}
+.splist {
+  margin-top:20rpx;
+  border-right:1rpx solid #E5E5E5;
+  border-bottom:1rpx solid #E5E5E5;
+}
+.splist .trtitle view,
+.splist .trlist view{
+  width:25%;
+  border-top:1rpx solid #E5E5E5;
+  border-left:1rpx solid #E5E5E5;
+}
+.splist .trtitle{
+  height:60rpx;
+  line-height:60rpx;
+  background-color:#F9F9F9
+}
+.splist .trlist view{
+  padding: 10rpx;
+  display:flex;
+  display: -webkit-flex;
+  align-items:center;
+}
+.imglist {
+  display: flex;
+  white-space: nowrap;
+}
+.imglist view {
+  width: 155rpx;
+  height: 145rpx;
+  padding-right:10rpx;
+  display: inline-block
+}
+.imglist image{
+  width:100%;
+  height:100%
+}
+.ysime {
+  width:20rpx;
+  height:20rpx;
+  border-radius: 50%;
+  margin-right: 30rpx;
+}
+.ysime view {
+  height:43rpx;
+  width:2rpx;
+  background-color: #E5E5E5;
+  position: relative;
+  top:20rpx;
+  left:9rpx;
+}
+.ptbon {
+  height:150rpx;
+}
+.ptbon>view{
+  padding:20rpx 28rpx 40rpx 28rpx;
+  border-top:2rpx solid #E3E3E7;
+  position: fixed;
+  left:0rpx;
+  right:0rpx;
+  bottom:0rpx;
+}
+.ptbon button {
+  width:46%;
+  height: 70rpx;
+  line-height: 70rpx;
+  font-size: 24rpx;
+}
+.ptbon button[type="default"]{
+  background-color: #E5E5E5;
+}
+.ptbon button[type="primary"]{
+  background-color: #16B4BA;
+}
+.box {
+  display:inline-block;
+  position: relative;
+  left:50rpx;
+  margin-top:20rpx;
+  background-color: #E5E5E5;
+  padding:15rpx 20rpx;
+  border-radius: 10rpx;
+}
+.boxt {
+  width:0rpx;
+  height:0rpx;
+  border-top:10rpx solid rgba(0,0,0,0);
+  border-right:10rpx solid  rgba(0,0,0,0);
+  border-bottom:10rpx solid #E5E5E5;
+  border-left:10rpx solid  rgba(0,0,0,0);
+  position: absolute;
+  top:-20rpx;
+}
+</style>
+<template>
+  <view class="infor bcfff relative ove-h">
+    <view wx:if="{{opType == 1}}">
+      <view><text class="c7B7 fz24">客户名称：</text><text class="c444 fz26">{{trialInfo.shopName}}</text></view>
+      <view><text class="c7B7 fz24">收款单号：</text><text class="c444 fz26">{{trialInfo.flowNo}}</text></view>
+      <view><text class="c7B7 fz24">收款金额：</text><text class="c444 fz26">￥{{trialInfo.amount}}</text></view>
+      <view><text class="c7B7 fz24">业务人员：</text><text class="c444 fz26">{{trialInfo.userName}}</text></view>
+      <view><text class="c7B7 fz24">收款备注：</text><text class="c444 fz28">{{trialInfo.comment}}</text></view>
+    </view>
+    <view wx:if="{{opType != 1}}">
+      <view><text class="c7B7 fz24">客户名称：</text><text class="c444 fz26">{{trialInfo.shopName}}</text></view>
+      <view><text class="c7B7 fz24">售后单号：</text><text class="c444 fz26">{{trialInfo.flowNo}}</text></view>
+      <view><text class="c7B7 fz24">售后类型：</text><text class="c444 fz26">{{trialInfo.dealType==0?'换货':'退货'}}</text></view>
+      <!-- <view><text class="c7B7 fz24">申请金额：</text><text class="c444 fz26">￥{{trialInfo.amount}}</text></view> -->
+      <view><text class="c7B7 fz24">业务人员：</text><text class="c444 fz26">{{trialInfo.userName}}</text></view>
+      <view><text class="c7B7 fz24">售后原因：</text><text class="c444 fz26">{{trialInfo.reason}}</text></view>
+      <view><text class="c7B7 fz24" decode="{{true}}" space="{{true}}">备<text style="margin-left:48rpx;"></text>注：</text><text class="c444 fz28">{{trialInfo.comment}}</text></view>
+    </view>
+    <image class="posImg" src="../images/oper/through.png" wx:if="{{trialInfo.approvalPass==1}}"></image>
+    <image class="posImg" src="../images/oper/retrun.png" wx:if="{{trialInfo.approvalPass==0}}"></image>
+  </view>
+  <view class="infor bcfff" wx:if="{{opType != 1}}">
+    <view class="c444 fz26">商品信息</view>
+    <view class="splist fz24 tc">
+      <view class="flex c7B7 trtitle"><view>商品</view><view>单价（元）</view><view>数量</view><view>金额（元）</view></view>
+      <view class="flex c444 trlist" wx:for="{{trialDetail}}" wx:for-item="items">
+        <view>{{items.goodsName}}</view>
+        <view>{{items.singleAmount}}</view>
+        <view>{{items.inventory}}{{items.unit}}</view>
+        <view>{{items.singleAmount*items.inventory}}</view>
+      </view>
+    </view>
+  </view>
+  <view class="infor bcfff" wx:if="{{opType == 1}}">
+    <view style="margin-bottom:20rpx;"><text class="c444 fz26">售后凭证</text><text class="cb9b fz24">（点击图片查看大图/共{{trialInfo.paths.length||0}}张）</text></view>
+    <scroll-view scroll-x="true" class="imglist">
+      <view wx:for="{{trialInfo.paths}}" wx:for-item="image">
+        <image mode="aspectFill" src="{{image}}" data-src="{{image}}" @tap="previewImage"></image>
+      </view>
+    </scroll-view>
+    <!-- <button type="primary" size="mini"  @tap="addImg">添加图片</button> -->
+  </view>
+  <view class="infor bcfff">
+    <view class="fz24" style="{{trialInfo.approvalPass == null||'margin-bottom:30rpx'}}">
+      <view class="inline-block bc3CC ysime"><view wx:if="{{trialInfo.approvalPass != null}}"></view></view>
+      <view class="inline-block c444">{{trialInfo.userName}}</view>
+      <view class="inline-block c444" style="margin-left:20rpx;">提交【{{typeText[opType-1]}}】申请</view>
+      <view class="inline-block cb9b right">{{trialInfo.createDate}}</view>
+    </view>
+    <view wx:if="{{trialInfo.approvalPass != null}}">
+      <view class="fz24">
+        <view class="inline-block bc3CC ysime"></view>
+        <view class="inline-block cFF6">{{trialInfo.approvalPass==1?'审批通过':'审批驳回'}}</view>
+        <view class="inline-block cb9b right">{{trialInfo.approvalDate}}</view>
+      </view>
+      <view class="box" wx:if="{{trialInfo.approvalOpinion}}">
+        <view class="boxt"></view>
+        <view class="fz24 c7B7" style="max-width:600rpx;">审批意见：{{trialInfo.approvalOpinion}}</view>
+      </view>
+    </view>
+    <!-- <view class="fz24" style="margin-bottom:30rpx;">
+      <view class="inline-block bc3CC ysime"><view></view></view>
+      <view class="inline-block c444">张小奇</view>
+      <view class="inline-block c444" style="margin-left:20rpx;">提交【售后退货/退款】申请</view>
+      <view class="inline-block cb9b right">2018-05-08 17:35</view>
+    </view>
+    <view class="fz24">
+      <view class="inline-block bc3CC ysime"></view>
+      <view class="inline-block c444">张祥</view>
+      <view class="inline-block cFF6" style="margin-left:20rpx;">审批驳回</view>
+      <view class="inline-block cb9b right">2018-04-08 12:00</view>
+    </view>
+    <view class="box">
+      <view class="boxt"></view>
+      <view class="fz24 c7B7">原因：已经出车，不允许退货</view>
+    </view> -->
+  </view>
+  <view class="ptbon" wx:if="{{trialInfo.approvalPass==null}}">
+    <view class="flex bcfff">
+      <button type="default" size="{{defaultSize}}" loading="{{loading}}" plain="{{plain}}" disabled="{{disabled}}" @tap="listenerButton" hover-class="other-button-hover">驳回</button>
+      <button type="primary" size="{{primarySize}}" loading="{{loading}}" plain="{{plain}}" disabled="{{disabled}}" @tap="pass">审批</button>
+    </view>
+  </view>
+  <!--弹出框-->
+  <modal hidden="{{hiddenModal}}" confirm-text="确认" cancel-text="取消" bindconfirm="listenerConfirm" bindcancel="listenerCancel">
+    <view style="background-color:#F5F5F5;padding:20rpx;">
+      <view class="right fz24 {{lenTxt==200?'cFF6':'cb9b'}}" style="margin-top:-60rpx;">{{lenTxt}}/200</view>
+      <textarea style="height:180rpx;width:100%;" placeholder="驳回原因..." placeholder-style="color:#B9B9C1" maxlength="200" focus="{{focus}}" fixed="true" value="{{textVal}}" @input="inputclick({{$event}})"/>
+    </view>
+  </modal>
+</template>
+<script>
+import wepy from 'wepy';
+import api from '../utils/api';
+import tip from '../utils/tip';
+export default class trialDetails extends wepy.page {
+  config = {
+    "navigationBarTitleText": "加载中...",
+  }
+  data = {
+    opType:null,
+    typeText:['收款上报','售后退货','售后换货'],
+    hiddenModal: true,
+    focus: false,
+    textVal:'',
+    lenTxt:0,
+    trialInfo:null,
+    trialDetail:[],
+    regCole:/[^\u0020-\u007E\u00A0-\u00BE\u2E80-\uA4CF\uF900-\uFAFF\uFE30-\uFE4F\uFF00-\uFFEF\u0080-\u009F\u2000-\u201f\u2026\u2022\u20ac\r\n]/g,
+  }
+  components = {
+  }
+  methods = {
+    pass(){
+      wepy.showModal({
+        content: '确认审批通过？',
+        success: res=> {
+          if (res.confirm) {
+            this.update(1);
+          } else if (res.cancel) {
+            console.log('用户点击取消')
+          }
+        }
+      })
+    },
+    listenerButton() {//显示获得焦点
+      this.hiddenModal = !this.data.hiddenModal;
+      this.focus = true;
+    },
+
+    listenerConfirm(e) {//确认
+      let that = this;
+      this.focus = false;
+      if(this.textVal){
+        if(this.textVal.match(this.regCole)) {
+          // this.textVal = this.textVal.replace(this.regCole, '');
+          tip.alert('请勿输入表情包');
+        }else{
+          this.hiddenModal = true;
+          this.update(0,this.textVal);
+        }
+      }else{
+        setTimeout(function(){
+          that.focus = true;
+          that.$apply();
+        });
+      }
+    },
+
+    listenerCancel() {//取消
+      this.hiddenModal =  true;
+      this.focus = false;
+    },
+    inputclick(e){
+      // if(e.detail.value.match(this.regCole)) {
+      //   e.detail.value = e.detail.value.replace(this.regCole, '');
+      // }
+      this.lenTxt = e.detail.value.length;
+      this.textVal = e.detail.value;
+    },
+    previewImage(e){
+      var src=e.target.dataset.src;
+      wepy.previewImage({
+          current: src, // 当前显示图片的http链接
+          urls: this.trialInfo.paths, // 需要预览的图片http链接列表
+      })
+    },
+    addImg(){
+      let that = this;
+      wepy.chooseImage({
+        count: 5, // 默认9
+        sizeType: ['original', 'compressed'], // 可以指定是原图还是压缩图，默认二者都有
+        sourceType: ['album', 'camera'], // 可以指定来源是相册还是相机，默认二者都有
+        success: res=> {
+          res.tempFilePaths.forEach(item=>{
+            that.images.push(item);
+          });
+          that.$apply();
+        }
+      })
+    }
+  }
+  update(type,textVal){
+    let upAjaxName = this.opType == 1?'updateReceiptReport':'updateApprovalOpinion';
+    api[upAjaxName]({
+      query: {
+        id:this.opId,
+        approvalPass: type,
+        approvalOpinion:textVal||''
+      }
+    },data=>{
+      wepy.removeStorageSync('refresh-trial');
+      wepy.navigateBack({
+        delta: 1
+      });
+    });
+  }
+  events = {
+  }
+  onLoad(option) {
+    wepy.setStorageSync('refresh-trial',true);
+    let typeName = ['','收款详情','退货退款详情','换货详情'];
+    let that = this;
+    this.opType = option.type;
+    this.opId = option.id;
+    wx.setNavigationBarTitle({
+      title: typeName[option.type]
+    });
+    let getAjaxName = option.type == 1?'getLiteReceiptReportById':'getLiteApproachDetail';
+    let params;
+    if(option.type == 1){
+      params = {
+        receiptId: option.id,
+      }
+    }else{
+      params = {
+        approachId: option.id,
+      }
+    }
+    api[getAjaxName]({
+      query: params
+    },data=>{
+      if(option.type == 1){
+        that.trialInfo = data.data;
+      }else{
+        that.trialInfo = data.data.approach;
+        that.trialDetail = data.data.detail;
+      }
+      that.$apply();
+    });
+  }
+}
+</script>
